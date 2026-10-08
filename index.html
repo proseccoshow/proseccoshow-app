@@ -21,7 +21,7 @@ window.KK_DATA = {
 
   // Большая плашка на главной. Чтобы вернуть «ближайшее событие», удалите этот блок.
   featured: {
-    kicker: "Выезд",
+    kicker: "Выезд · 4–8 ноября 2026",
     title: "Импро-кэмп на Валдае",
     text: "Несколько дней импровизации на природе вместе с командой Prosecco Show.",
     button: "Подробнее",
@@ -31,14 +31,14 @@ window.KK_DATA = {
   sections: {
     events:    { title: "Афиша",      caption: "Развлекательные шоу" },
     materials: { title: "Материалы",  caption: "Методички, статьи, подкаст, видео" },
-    artlab:    { title: "Арт Лаб",    caption: "Каждый понедельник в 19:00" }
+    artlab:    { title: "Расписание образовательных практик", caption: "Арт Лаб и онлайн-практики" }
   },
 
   // Дата в формате ГГГГ-ММ-ДД. Прошедшие события скрываются сами.
   events: [
-    { date: "2026-10-19", time: "21:30", title: "Комики против проблем ивенторов с Адисом Маммо", guest: "", place: "Стендап Стор", button: "Купить билет", url: "https://t.me/your_channel/10" },
-    { date: "2026-10-25", time: "16:00", title: "Музыкальная импровизация Prosecco Show", guest: "Найк Борзов", place: "Стендап Стор", button: "Купить билет", url: "https://t.me/your_channel/11" },
-    { date: "2026-10-29", time: "21:30", title: "Легендарная длинная форма импровизации Prosecco Show", guest: "", place: "Стендап Стор", button: "Купить билет", url: "https://t.me/your_channel/12" }
+    { date: "2026-10-19", time: "21:30", title: "Комики против проблем ивенторов с Адисом Маммо", guest: "", place: "Stand Up Store", button: "Купить билет", url: "" },
+    { date: "2026-10-25", time: "16:00", title: "Музыкальная импровизация Prosecco Show", guest: "", place: "Stand Up Store", button: "Купить билет", url: "" },
+    { date: "2026-10-29", time: "21:30", title: "Легендарная длинная форма импровизации Prosecco Show", guest: "", place: "Stand Up Store", button: "Купить билет", url: "" }
   ],
 
   // Тема карточки должна совпадать с одной из тем в списке topics.
@@ -55,12 +55,18 @@ window.KK_DATA = {
 
   // Арт Лаб: даты по понедельникам считаются автоматически.
   artlab: {
-    intro: "Каждый понедельник в 19:00.",
+    intro: "Арт Лаб — каждый понедельник в 19:00. Онлайн-практики — по средам.",
     weekday: 1,            // 1 = понедельник
     time: "19:00",
     weeksAhead: 6,         // сколько ближайших дат показывать
     button: "Купить билет",
     ticketUrl: "https://moscow.qtickets.events/237834-art-lab-prosecco-show",
+    // Дополнительные занятия — встают в расписание по дате, прошедшие скрываются.
+    extra: [
+      { date: "2026-10-14", time: "19:00–20:00", title: "Онлайн-практика", guest: "Аня Шалашова", guestLabel: "Тренер", button: "", url: "" },
+      { date: "2026-10-21", time: "19:00–20:00", title: "Онлайн-практика", guest: "Аня Шалашова", guestLabel: "Тренер", button: "", url: "" },
+      { date: "2026-10-28", time: "19:00–20:00", title: "Онлайн-практика", guest: "Аня Шалашова", guestLabel: "Тренер", button: "", url: "" }
+    ],
     promo: {
       code: "АРТЛАБ50",
       text: "Скидка 50% для всех резидентов закрытого чата"
@@ -128,6 +134,8 @@ window.KK_DATA = {
   .ev-date { flex: 0 0 52px; text-align: center; }
   .ev-day { display: block; font-family: var(--display); font-size: 26px; font-weight: 900; line-height: 1; color: var(--accent); }
   .ev-mon { font-size: 12px; color: var(--muted); }
+  .ev-soon { display: inline-block; margin-top: 8px; font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 999px; background: #E3E7EF; color: #7A8496; }
+  .card-title { overflow-wrap: anywhere; }
   .ev-btn { flex: 0 0 auto; font-size: 13px; font-weight: 700; padding: 8px 12px; border-radius: 999px; background: var(--accent); color: var(--bg); }
 
   .chips { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 16px; padding-bottom: 4px; }
@@ -223,7 +231,7 @@ window.KK_DATA = {
       h += '<section class="next"><p class="next-kicker">Ближайшее событие</p>';
       h += '<p class="next-date">' + d.getDate() + " " + MONTHS[d.getMonth()] + (next.time ? ", " + esc(next.time) : "") + "</p>";
       h += '<p class="next-title">' + esc(next.title) + "</p>";
-      if (next.guest) h += '<p class="next-place" style="margin-bottom:2px">Гость: ' + esc(next.guest) + "</p>";
+      if (next.guest) h += '<p class="next-place" style="margin-bottom:2px">' + esc(next.guestLabel || "Гость") + ": " + esc(next.guest) + "</p>";
       h += '<p class="next-place">' + esc(next.place) + "</p>";
       h += link(next.url, "btn", esc(next.button)) + "</section>";
     }
@@ -257,11 +265,11 @@ window.KK_DATA = {
     h += '<div class="list">';
     list.forEach(function (e) {
       var d = parseDate(e.date);
-      h += link(e.url, "card",
-        '<span class="ev-date"><span class="ev-day">' + d.getDate() + '</span><span class="ev-mon">' + MON_SHORT[d.getMonth()] + "</span></span>" +
+      var inner =         '<span class="ev-date"><span class="ev-day">' + d.getDate() + '</span><span class="ev-mon">' + MON_SHORT[d.getMonth()] + "</span></span>" +
         '<span class="card-body"><span class="card-title">' + esc(e.title) + '</span><span class="card-cap">' +
-        (e.time ? esc(e.time) + ", " : "") + esc(e.place) + (e.guest ? "<br>Гость: " + esc(e.guest) : "") + "</span></span>" +
-        '<span class="ev-btn">' + esc(e.button) + "</span>");
+        (e.time ? esc(e.time) + ", " : "") + esc(e.place) + (e.guest ? "<br>" + esc(e.guestLabel || "Гость") + ": " + esc(e.guest) : "") + "</span>" + (e.url ? "" : '<span class="ev-soon">Скоро добавим ссылку</span>') + "</span>" +
+        (e.url ? '<span class="ev-btn">' + esc(e.button) + "</span>" : "");
+      h += e.url ? link(e.url, "card", inner) : '<div class="card">' + inner + "</div>";
     });
     return h + "</div>";
   }
@@ -293,12 +301,22 @@ window.KK_DATA = {
       h += '<button class="promo-code" data-copy="' + esc(A.promo.code) + '"><b>' + esc(A.promo.code) +
         '</b><span class="promo-hint">Скопировать</span></button></section>';
     }
+    var t0 = new Date(); t0.setHours(0, 0, 0, 0);
+    var items = artlabDates().map(function (d) {
+      return { d: d, title: "Арт Лаб", cap: WEEKDAYS[d.getDay()] + ", " + A.time, button: A.button, url: A.ticketUrl };
+    });
+    (A.extra || []).forEach(function (x) {
+      var d = parseDate(x.date);
+      if (d < t0) return;
+      items.push({ d: d, title: x.title, cap: WEEKDAYS[d.getDay()] + ", " + x.time + (x.guest ? "\n" + (x.guestLabel || "Гость") + ": " + x.guest : ""), button: x.button, url: x.url });
+    });
+    items.sort(function (a, b) { return a.d - b.d; });
     h += '<div class="list">';
-    artlabDates().forEach(function (d) {
-      h += link(A.ticketUrl, "card",
-        '<span class="ev-date"><span class="ev-day">' + d.getDate() + '</span><span class="ev-mon">' + MON_SHORT[d.getMonth()] + "</span></span>" +
-        '<span class="card-body"><span class="card-title">Арт Лаб</span><span class="card-cap">' + WEEKDAYS[d.getDay()] + ", " + esc(A.time) + "</span></span>" +
-        '<span class="ev-btn">' + esc(A.button) + "</span>");
+    items.forEach(function (it) {
+      var inner = '<span class="ev-date"><span class="ev-day">' + it.d.getDate() + '</span><span class="ev-mon">' + MON_SHORT[it.d.getMonth()] + "</span></span>" +
+        '<span class="card-body"><span class="card-title">' + esc(it.title) + '</span><span class="card-cap">' + esc(it.cap).replace("\n", "<br>") + "</span></span>" +
+        (it.button ? '<span class="ev-btn">' + esc(it.button) + "</span>" : "");
+      h += it.url ? link(it.url, "card", inner) : '<div class="card">' + inner + "</div>";
     });
     return h + "</div>";
   }
