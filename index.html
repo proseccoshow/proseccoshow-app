@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PRSCC+</title>
+<script src="telegram-web-app.js"></script>
+<script>
+/* ============================================================
+   МЕНЯЕТЕ ТОЛЬКО ЭТОТ БЛОК
+   ============================================================ */
+window.KK_DATA = {
+  colors: { bg: "#FFFFFF", surface: "#EEF4FF", accent: "#1F5BFF", text: "#0B1B3F", muted: "#5A6B8C" },
+
+  header: {
+    label: "",
+    titleLine1: "PRSCC+",
+    titleLine2: "",
+    description: "Всё для участников в одном месте: ближайшие шоу, полезные материалы и Арт Лаб."
+  },
+
+  // Большая плашка на главной. Чтобы вернуть «ближайшее событие», удалите этот блок.
+  featured: {
+    kicker: "Выезд",
+    title: "Импро-кэмп на Валдае",
+    text: "Несколько дней импровизации на природе вместе с командой Prosecco Show.",
+    button: "Подробнее",
+    url: "https://iznutrinaruzhu.ru/impro_camp"
+  },
+
+  sections: {
+    events:    { title: "Афиша",      caption: "Развлекательные шоу" },
+    materials: { title: "Материалы",  caption: "Методички, статьи, подкаст, видео" },
+    artlab:    { title: "Арт Лаб",    caption: "Каждый понедельник в 19:00" }
+  },
+
+  // Дата в формате ГГГГ-ММ-ДД. Прошедшие события скрываются сами.
+  events: [
+    { date: "2026-10-19", time: "21:30", title: "Комики против проблем ивенторов с Адисом Маммо", guest: "", place: "Стендап Стор", button: "Купить билет", url: "https://t.me/your_channel/10" },
+    { date: "2026-10-25", time: "16:00", title: "Музыкальная импровизация Prosecco Show", guest: "Найк Борзов", place: "Стендап Стор", button: "Купить билет", url: "https://t.me/your_channel/11" },
+    { date: "2026-10-29", time: "21:30", title: "Легендарная длинная форма импровизации Prosecco Show", guest: "", place: "Стендап Стор", button: "Купить билет", url: "https://t.me/your_channel/12" }
+  ],
+
+  // Тема карточки должна совпадать с одной из тем в списке topics.
+  topics: ["Методички", "Статьи", "Подкасты", "Видео"],
+  materials: [
+    { topic: "Методички", title: "Методичка по импровизации",            caption: "Пост в закрытом чате", url: "https://t.me/c/2178644533/128" },
+    { topic: "Статьи",    title: "5 золотых правил импровизации",          caption: "Подробный разбор от SETTERS", url: "https://www.setters.media/post/liderstvo-i-improvizatsiya" },
+    { topic: "Подкасты",  title: "Подкаст «Шутки не главное»",            caption: "Все выпуски в VK Видео", url: "https://vkvideo.ru/playlist/-49577759_1" },
+    { topic: "Видео",     title: "Запись форума ImProseccoForum",          caption: "VK Видео", url: "https://m.vkvideo.ru/@prosecco_show/playlists" },
+    { topic: "Видео",     title: "Влог о любопытстве",                     caption: "VK Видео", url: "https://m.vkvideo.ru/@prosecco_show/playlists" },
+    { topic: "Видео",     title: "Middleditch & Schwartz: первый эпизод",  caption: "Пост в закрытом чате", url: "https://t.me/c/2178644533/125" },
+    { topic: "Видео",     title: "Эфир Руслана Морозова",                  caption: "Импровизация в бизнесе: переговоры, партнёрство, команда", url: "https://t.me/proseccoshow/1668" }
+  ],
+
+  // Арт Лаб: даты по понедельникам считаются автоматически.
+  artlab: {
+    intro: "Каждый понедельник в 19:00.",
+    weekday: 1,            // 1 = понедельник
+    time: "19:00",
+    weeksAhead: 6,         // сколько ближайших дат показывать
+    button: "Купить билет",
+    ticketUrl: "https://moscow.qtickets.events/237834-art-lab-prosecco-show",
+    promo: {
+      code: "АРТЛАБ50",
+      text: "Скидка 50% для всех резидентов закрытого чата"
+    }
+  },
+
+  // Консультация — блок на главной под разделами.
+  consult: {
+    title: "Консультация по образовательным продуктам",
+    text: "Подберём формат, чтобы встроить импровизацию в бизнес, команду и жизнь.",
+    button: "Написать в Telegram",
+    url: "https://t.me/prosecco_show"
+  },
+
+  footer: { name: "Prosecco Show", school: "Русская смекалка" }
+};
+/* ============================================================ */
+</script>
+<style>
+  :root {
+    --bg: #FFFFFF; --surface: #EEF4FF; --accent: #1F5BFF; --text: #0B1B3F; --muted: #5A6B8C;
+    --line: rgba(31, 91, 255, 0.14);
+    --display: "Unbounded", "Arial Black", "Helvetica Neue", Arial, sans-serif;
+    --body: "Golos Text", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--text); }
+  body {
+    font-family: var(--body); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased;
+    padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px);
+  }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 36px 22px 32px; }
+  a { color: inherit; text-decoration: none; -webkit-tap-highlight-color: transparent; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  .label { font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
+  .title { font-family: var(--display); font-weight: 900; font-size: clamp(34px, 10vw, 48px); line-height: 1.02; letter-spacing: -.02em; margin-bottom: 14px; }
+  .title span { display: block; }
+  .desc { color: var(--muted); max-width: 42ch; }
+
+  .next { display: block; margin-top: 30px; padding: 24px 22px; border-radius: 26px; background: var(--accent); color: var(--bg); }
+  .next-kicker { font-size: 13px; font-weight: 600; opacity: .75; }
+  .next-date { font-family: var(--display); font-size: 30px; font-weight: 900; line-height: 1.1; margin: 4px 0 8px; }
+  .next-title { font-weight: 700; font-size: 17px; }
+  .next-place { font-size: 14px; opacity: .8; margin-bottom: 18px; }
+  .btn { display: block; text-align: center; font-weight: 700; padding: 15px 18px; border-radius: 999px; background: var(--bg); color: var(--text); }
+
+  .sections { margin-top: 26px; display: flex; flex-direction: column; gap: 10px; }
+  .sec { display: flex; align-items: center; gap: 14px; padding: 20px; border-radius: 20px; background: var(--surface); border: 1px solid var(--line); cursor: pointer; width: 100%; text-align: left; color: var(--text); font: inherit; }
+  .sec:active, .card:active { filter: brightness(0.96); }
+  .sec-body { flex: 1; }
+  .sec-title { display: block; font-family: var(--display); font-size: 20px; font-weight: 800; }
+  .sec-cap { font-size: 13px; color: var(--muted); }
+  .arrow { color: var(--accent); font-size: 22px; }
+
+  .back { background: none; border: 0; color: var(--accent); font: inherit; font-weight: 600; padding: 4px 0; margin-bottom: 18px; cursor: pointer; }
+  .screen-title { font-family: var(--display); font-size: 32px; font-weight: 900; line-height: 1.05; margin-bottom: 20px; }
+
+  .list { display: flex; flex-direction: column; gap: 10px; }
+  .card { display: flex; align-items: center; gap: 14px; padding: 18px; border-radius: 18px; background: var(--surface); border: 1px solid var(--line); }
+  .card-body { flex: 1; min-width: 0; }
+  .card-title { display: block; font-weight: 700; line-height: 1.3; }
+  .card-cap { display: block; font-size: 13px; color: var(--muted); margin-top: 3px; }
+
+  .ev-date { flex: 0 0 52px; text-align: center; }
+  .ev-day { display: block; font-family: var(--display); font-size: 26px; font-weight: 900; line-height: 1; color: var(--accent); }
+  .ev-mon { font-size: 12px; color: var(--muted); }
+  .ev-btn { flex: 0 0 auto; font-size: 13px; font-weight: 700; padding: 8px 12px; border-radius: 999px; background: var(--accent); color: var(--bg); }
+
+  .chips { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 16px; padding-bottom: 4px; }
+  .chip { flex: 0 0 auto; border: 1px solid var(--line); background: transparent; color: var(--text); font: inherit; font-size: 14px; padding: 8px 14px; border-radius: 999px; cursor: pointer; }
+  .chip.on { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+  .empty, .intro { color: var(--muted); }
+  .empty { padding: 20px 0; }
+  .intro { margin-bottom: 18px; }
+
+  .promo { margin-bottom: 18px; padding: 20px; border-radius: 20px; background: var(--accent); color: var(--bg); }
+  .promo-text { font-size: 14px; margin-bottom: 12px; }
+  .promo-code { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; padding: 14px 16px; border-radius: 14px; border: 2px dashed rgba(255,255,255,.6); background: transparent; color: var(--bg); font: inherit; cursor: pointer; }
+  .promo-code b { font-family: var(--display); font-size: 22px; letter-spacing: .04em; }
+  .promo-hint { font-size: 13px; opacity: .85; }
+
+  .consult { margin-top: 26px; padding: 22px 20px; border-radius: 22px; border: 2px solid var(--accent); }
+  .consult h2 { font-family: var(--display); font-size: 20px; line-height: 1.2; margin-bottom: 8px; }
+  .consult p { color: var(--muted); font-size: 15px; margin-bottom: 16px; }
+  .consult .btn { background: var(--accent); color: #FFFFFF; }
+  .consult-phone { display: block; text-align: center; margin-top: 12px; font-size: 14px; color: var(--accent); font-weight: 600; }
+
+  .foot { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+  .foot b { display: block; color: var(--text); font-weight: 600; }
+</style>
+</head>
+<body>
+<main class="wrap" id="app"></main>
+
+<script>
+(function () {
+  var D = window.KK_DATA;
+  var C = D.colors;
+  var root = document.documentElement.style;
+  root.setProperty("--bg", C.bg); root.setProperty("--surface", C.surface);
+  root.setProperty("--accent", C.accent); root.setProperty("--text", C.text); root.setProperty("--muted", C.muted);
+
+  var loc = (location.hash || "") + (location.search || "");
+  var inTelegram = loc.indexOf("tgWebApp") !== -1 || !!window.TelegramWebviewProxy ||
+    !!(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.performAction);
+  var tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+
+  if (tg) {
+    try { tg.ready(); } catch (e) {}
+    try { tg.expand(); } catch (e) {}
+    try { tg.setHeaderColor(C.bg); } catch (e) {}
+    try { tg.setBackgroundColor(C.bg); } catch (e) {}
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  var target = inTelegram ? "_self" : "_blank";
+  function link(url, cls, inner) {
+    return '<a class="' + cls + '" href="' + esc(url) + '" data-url="' + esc(url) + '" target="' + target + '" rel="noopener">' + inner + "</a>";
+  }
+
+  var MONTHS = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
+  var MON_SHORT = ["янв","фев","мар","апр","мая","июн","июл","авг","сен","окт","ноя","дек"];
+  function parseDate(s) { var p = s.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function upcoming() {
+    var t = new Date(); t.setHours(0, 0, 0, 0);
+    return D.events.filter(function (e) { return parseDate(e.date) >= t; })
+      .sort(function (a, b) { return parseDate(a.date) - parseDate(b.date); });
+  }
+
+  var app = document.getElementById("app");
+  var activeTopic = null;
+
+  function arrowCard(m) {
+    return link(m.url, "card", '<span class="card-body"><span class="card-title">' + esc(m.title) + '</span><span class="card-cap">' +
+      esc(m.caption) + '</span></span><span class="arrow" aria-hidden="true">›</span>');
+  }
+
+  function renderHome() {
+    var h = "<header>";
+    if (D.header.label) h += '<p class="label">' + esc(D.header.label) + "</p>";
+    h += '<h1 class="title"><span>' + esc(D.header.titleLine1) + "</span>" + (D.header.titleLine2 ? "<span>" + esc(D.header.titleLine2) + "</span>" : "") + "</h1>";
+    h += '<p class="desc">' + esc(D.header.description) + "</p></header>";
+
+    var f = D.featured;
+    if (f) {
+      h += '<section class="next"><p class="next-kicker">' + esc(f.kicker) + "</p>";
+      h += '<p class="next-date">' + esc(f.title) + "</p>";
+      h += '<p class="next-place">' + esc(f.text) + "</p>";
+      h += link(f.url, "btn", esc(f.button)) + "</section>";
+    }
+    var next = f ? null : upcoming()[0];
+    if (next) {
+      var d = parseDate(next.date);
+      h += '<section class="next"><p class="next-kicker">Ближайшее событие</p>';
+      h += '<p class="next-date">' + d.getDate() + " " + MONTHS[d.getMonth()] + (next.time ? ", " + esc(next.time) : "") + "</p>";
+      h += '<p class="next-title">' + esc(next.title) + "</p>";
+      if (next.guest) h += '<p class="next-place" style="margin-bottom:2px">Гость: ' + esc(next.guest) + "</p>";
+      h += '<p class="next-place">' + esc(next.place) + "</p>";
+      h += link(next.url, "btn", esc(next.button)) + "</section>";
+    }
+
+    h += '<nav class="sections">';
+    ["events", "materials", "artlab"].forEach(function (key) {
+      var s = D.sections[key];
+      h += '<button class="sec" data-go="' + key + '"><span class="sec-body"><span class="sec-title">' + esc(s.title) +
+        '</span><span class="sec-cap">' + esc(s.caption) + '</span></span><span class="arrow" aria-hidden="true">›</span></button>';
+    });
+    h += "</nav>";
+    var K = D.consult;
+    if (K) {
+      h += '<section class="consult"><h2>' + esc(K.title) + "</h2><p>" + esc(K.text) + "</p>";
+      h += link(K.url, "btn", esc(K.button));
+      if (K.phone) h += '<a class="consult-phone" href="tel:' + esc(K.phone) + '">' + esc(K.phoneLabel) + "</a>";
+      h += "</section>";
+    }
+    h += '<footer class="foot"><b>' + esc(D.footer.name) + "</b>" + esc(D.footer.school) + "</footer>";
+    return h;
+  }
+
+  function screenHead(key) {
+    return '<button class="back" data-go="home">‹ Назад</button><h1 class="screen-title">' + esc(D.sections[key].title) + "</h1>";
+  }
+
+  function renderEvents() {
+    var list = upcoming();
+    var h = screenHead("events");
+    if (!list.length) return h + '<p class="empty">Новые события скоро появятся — следите за чатом.</p>';
+    h += '<div class="list">';
+    list.forEach(function (e) {
+      var d = parseDate(e.date);
+      h += link(e.url, "card",
+        '<span class="ev-date"><span class="ev-day">' + d.getDate() + '</span><span class="ev-mon">' + MON_SHORT[d.getMonth()] + "</span></span>" +
+        '<span class="card-body"><span class="card-title">' + esc(e.title) + '</span><span class="card-cap">' +
+        (e.time ? esc(e.time) + ", " : "") + esc(e.place) + (e.guest ? "<br>Гость: " + esc(e.guest) : "") + "</span></span>" +
+        '<span class="ev-btn">' + esc(e.button) + "</span>");
+    });
+    return h + "</div>";
+  }
+
+  function renderMaterials() {
+    var h = screenHead("materials");
+    h += '<div class="chips"><button class="chip' + (activeTopic === null ? " on" : "") + '" data-topic="">Все</button>';
+    D.topics.forEach(function (t) {
+      h += '<button class="chip' + (activeTopic === t ? " on" : "") + '" data-topic="' + esc(t) + '">' + esc(t) + "</button>";
+    });
+    h += '</div><div class="list">';
+    D.materials.filter(function (m) { return activeTopic === null || m.topic === activeTopic; }).forEach(function (m) { h += arrowCard(m); });
+    return h + "</div>";
+  }
+
+  var WEEKDAYS = ["воскресенье","понедельник","вторник","среда","четверг","пятница","суббота"];
+  function artlabDates() {
+    var A = D.artlab, out = [], d = new Date(); d.setHours(0, 0, 0, 0);
+    while (d.getDay() !== A.weekday) d.setDate(d.getDate() + 1);
+    for (var i = 0; i < A.weeksAhead; i++) { out.push(new Date(d)); d.setDate(d.getDate() + 7); }
+    return out;
+  }
+
+  function renderArtlab() {
+    var A = D.artlab;
+    var h = screenHead("artlab") + '<p class="intro">' + esc(A.intro) + "</p>";
+    if (A.promo) {
+      h += '<section class="promo"><p class="promo-text">' + esc(A.promo.text) + "</p>";
+      h += '<button class="promo-code" data-copy="' + esc(A.promo.code) + '"><b>' + esc(A.promo.code) +
+        '</b><span class="promo-hint">Скопировать</span></button></section>';
+    }
+    h += '<div class="list">';
+    artlabDates().forEach(function (d) {
+      h += link(A.ticketUrl, "card",
+        '<span class="ev-date"><span class="ev-day">' + d.getDate() + '</span><span class="ev-mon">' + MON_SHORT[d.getMonth()] + "</span></span>" +
+        '<span class="card-body"><span class="card-title">Арт Лаб</span><span class="card-cap">' + WEEKDAYS[d.getDay()] + ", " + esc(A.time) + "</span></span>" +
+        '<span class="ev-btn">' + esc(A.button) + "</span>");
+    });
+    return h + "</div>";
+  }
+
+  function copyText(text, done) {
+    function fallback() {
+      var t = document.createElement("textarea"); t.value = text; t.setAttribute("readonly", "");
+      t.style.position = "fixed"; t.style.opacity = "0"; document.body.appendChild(t); t.select();
+      try { document.execCommand("copy"); } catch (e) {}
+      document.body.removeChild(t); done();
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback);
+    else fallback();
+  }
+
+  function show(screen) {
+    var map = { home: renderHome, events: renderEvents, materials: renderMaterials, artlab: renderArtlab };
+    app.innerHTML = (map[screen] || renderHome)();
+    window.scrollTo(0, 0);
+    bind();
+    if (tg && tg.BackButton) {
+      try { if (screen === "home") tg.BackButton.hide(); else tg.BackButton.show(); } catch (e) {}
+    }
+  }
+  if (tg && tg.BackButton) { try { tg.BackButton.onClick(function () { show("home"); }); } catch (e) {} }
+
+  function postEvent(type, data) {
+    var payload = data || {};
+    try {
+      if (window.TelegramWebviewProxy) {
+        window.TelegramWebviewProxy.postEvent(type, JSON.stringify(payload));
+      } else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.performAction) {
+        window.webkit.messageHandlers.performAction.postMessage(JSON.stringify({ eventType: type, eventData: payload }));
+      } else if (window.parent && window.parent !== window) {
+        window.parent.postMessage(JSON.stringify({ eventType: type, eventData: payload }), "*");
+      }
+    } catch (e) {}
+  }
+
+  function onLink(e) {
+    var url = this.getAttribute("data-url");
+    if (!url || !inTelegram) return;
+    e.preventDefault();
+    var isTg = url.indexOf("https://t.me/") === 0;
+    if (tg) {
+      if (isTg) { tg.close(); tg.openTelegramLink(url); }
+      else { tg.openLink(url); }
+    } else {
+      if (isTg) {
+        postEvent("web_app_close");
+        postEvent("web_app_open_tg_link", { path_full: url.replace("https://t.me", "") });
+      } else {
+        postEvent("web_app_open_link", { url: url });
+      }
+    }
+  }
+
+  function bind() {
+    var i, els;
+    els = app.querySelectorAll("[data-copy]");
+    for (i = 0; i < els.length; i++) els[i].addEventListener("click", function () {
+      var btn = this, hint = btn.querySelector(".promo-hint");
+      copyText(btn.getAttribute("data-copy"), function () {
+        hint.textContent = "Скопировано";
+        try { if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success"); } catch (e) {}
+        setTimeout(function () { hint.textContent = "Скопировать"; }, 1800);
+      });
+    });
+    els = app.querySelectorAll("a[data-url]");
+    for (i = 0; i < els.length; i++) els[i].addEventListener("click", onLink);
+    els = app.querySelectorAll("[data-go]");
+    for (i = 0; i < els.length; i++) els[i].addEventListener("click", function () { show(this.getAttribute("data-go")); });
+    els = app.querySelectorAll("[data-topic]");
+    for (i = 0; i < els.length; i++) els[i].addEventListener("click", function () {
+      var t = this.getAttribute("data-topic"); activeTopic = t || null; show("materials");
+    });
+  }
+
+  show("home");
+})();
+</script>
+</body>
+</html>
