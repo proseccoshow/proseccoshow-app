@@ -20,12 +20,13 @@ window.KK_DATA = {
   },
 
   // Большая плашка на главной. Чтобы вернуть «ближайшее событие», удалите этот блок.
+  // go: "course" открывает видеокурс внутри приложения; для внешней ссылки укажите url вместо go.
   featured: {
-    kicker: "Выезд · 4–8 ноября 2026",
-    title: "Импро-кэмп на Валдае",
-    text: "Несколько дней импровизации на природе вместе с командой Prosecco Show.",
-    button: "Подробнее",
-    url: "https://iznutrinaruzhu.ru/impro_camp"
+    kicker: "Видеокурс · 6 уроков",
+    title: "5 золотых правил импровизации",
+    text: "Вводный урок и пять правил, которые работают на сцене, в команде и в жизни.",
+    button: "Смотреть курс",
+    go: "course"
   },
 
   sections: {
@@ -256,7 +257,7 @@ window.KK_DATA = {
       h += '<section class="next"><p class="next-kicker">' + esc(f.kicker) + "</p>";
       h += '<p class="next-date">' + esc(f.title) + "</p>";
       h += '<p class="next-place">' + esc(f.text) + "</p>";
-      h += link(f.url, "btn", esc(f.button)) + "</section>";
+      h += (f.go === "course" ? '<button class="btn" style="width:100%;border:0;font:inherit;font-weight:700;cursor:pointer" data-course="1">' + esc(f.button) + "</button>" : link(f.url, "btn", esc(f.button))) + "</section>";
     }
     var next = f ? null : upcoming()[0];
     if (next) {
@@ -466,6 +467,8 @@ window.KK_DATA = {
         setTimeout(function () { hint.textContent = "Скопировать"; }, 1800);
       });
     });
+    els = app.querySelectorAll("[data-course]");
+    for (i = 0; i < els.length; i++) els[i].addEventListener("click", function () { activeTopic = D.course.topic; show("materials"); });
     els = app.querySelectorAll("[data-lesson]");
     for (i = 0; i < els.length; i++) els[i].addEventListener("click", function () {
       var u = this.getAttribute("data-lesson");
