@@ -30,7 +30,7 @@ window.KK_DATA = {
 
   sections: {
     events:    { title: "Афиша",      caption: "Развлекательные шоу" },
-    materials: { title: "Материалы",  caption: "Методички, статьи, подкаст, видео" },
+    materials: { title: "Материалы",  caption: "Видеокурс, методички, статьи, подкаст" },
     artlab:    { title: "Расписание образовательных практик", caption: "Арт Лаб и онлайн-практики" }
   },
 
@@ -41,8 +41,25 @@ window.KK_DATA = {
     { date: "2026-10-29", time: "21:30", title: "Легендарная длинная форма импровизации Prosecco Show", guest: "", place: "Stand Up Store", button: "Купить билет", url: "" }
   ],
 
+  // Видеокурс в Материалах. Просмотренные уроки отмечаются галочкой у каждого участника.
+  // Чтобы добавить урок, скопируйте строку и поменяйте номер, название, вопрос и ссылку.
+  course: {
+    topic: "Курс",
+    kicker: "Видеокурс",
+    title: "5 золотых правил импровизации",
+    text: "Вводный урок и пять правил, которые работают на сцене, в команде и в жизни.",
+    lessons: [
+      { n: "0", title: "Вводный урок", text: "Что такое импровизация? Как её применять в жизни?", url: "https://disk.yandex.ru/i/5_6dv18nB0Bi2A" },
+      { n: "1", title: "Правило «Да, и…»", text: "Как перестать тратить энергию на сопротивление, быстрее адаптироваться к изменениям и превращать любую ситуацию в точку для новых возможностей?", url: "https://disk.yandex.ru/i/N0GB_0ZKDhzAzw" },
+      { n: "2", title: "Правило «Сделай из партнёра звезду»", text: "Как создавать сильные команды, раскрывать потенциал людей и выстраивать взаимодействие, в котором выигрывают все участники?", url: "https://disk.yandex.ru/i/FHN08NuxizB2Vg" },
+      { n: "3", title: "Правило «Ошибки — это подарки»", text: "Как перестать бояться ошибок, быстрее принимать решения и использовать неопределённость как пространство для роста и новых решений?", url: "https://disk.yandex.ru/i/lNwhfxSz0SbQKA" },
+      { n: "4", title: "Правило «Шутки не главное, связи решают»", text: "Как видеть глубже очевидного, находить неожиданные взаимосвязи и создавать нестандартные решения там, где другие видят тупик?", url: "https://disk.yandex.ru/i/7nTzeUz5Dr--bw" },
+      { n: "5", title: "Правило «Чистая голова»", text: "Как отключить внутреннего критика, полностью присутствовать в моменте и принимать более точные решения благодаря вниманию, а не контролю?", url: "https://disk.yandex.ru/i/Yz4S7xhg5wDYNw" }
+    ]
+  },
+
   // Тема карточки должна совпадать с одной из тем в списке topics.
-  topics: ["Методички", "Статьи", "Подкасты", "Видео"],
+  topics: ["Курс", "Методички", "Статьи", "Подкасты", "Видео"],
   materials: [
     { topic: "Методички", title: "Методичка по импровизации",            caption: "Пост в закрытом чате", url: "https://t.me/c/2178644533/128" },
     { topic: "Статьи",    title: "5 золотых правил импровизации",          caption: "Подробный разбор от SETTERS", url: "https://www.setters.media/post/liderstvo-i-improvizatsiya" },
@@ -141,6 +158,22 @@ window.KK_DATA = {
   .chips { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 16px; padding-bottom: 4px; }
   .chip { flex: 0 0 auto; border: 1px solid var(--line); background: transparent; color: var(--text); font: inherit; font-size: 14px; padding: 8px 14px; border-radius: 999px; cursor: pointer; }
   .chip.on { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+  .course { margin-bottom: 14px; padding: 22px 20px; border-radius: 24px; background: var(--accent); color: var(--bg); }
+  .course-kicker { font-size: 13px; font-weight: 600; opacity: .8; }
+  .course-title { font-family: var(--display); font-size: 22px; font-weight: 900; line-height: 1.15; margin: 4px 0 8px; }
+  .course-text { font-size: 14px; opacity: .9; margin-bottom: 16px; }
+  .bar { height: 6px; border-radius: 3px; background: rgba(255,255,255,.3); overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--bg); border-radius: 3px; transition: width .3s; }
+  .course-prog { font-size: 13px; margin-top: 8px; opacity: .9; }
+  .lessons { display: flex; flex-direction: column; gap: 10px; margin-bottom: 26px; }
+  .lesson { display: flex; gap: 14px; align-items: flex-start; padding: 16px; border-radius: 18px; background: var(--surface); border: 1px solid var(--line); }
+  .lesson-num { flex: 0 0 40px; height: 40px; border-radius: 12px; background: var(--accent); color: var(--bg); display: flex; align-items: center; justify-content: center; font-family: var(--display); font-weight: 900; font-size: 18px; }
+  .lesson.done .lesson-num { background: var(--bg); color: var(--accent); border: 2px solid var(--accent); font-size: 20px; }
+  .lesson-text { display: block; font-size: 13px; color: var(--muted); margin: 4px 0 10px; }
+  .lesson-btn { display: inline-block; font-size: 13px; font-weight: 700; padding: 7px 14px; border-radius: 999px; background: var(--accent); color: var(--bg); }
+  .lesson.done .lesson-btn { background: transparent; color: var(--accent); border: 1px solid var(--accent); padding: 6px 13px; }
+  .group-title { font-family: var(--display); font-size: 18px; font-weight: 800; margin: 4px 0 12px; }
 
   .empty, .intro { color: var(--muted); }
   .empty { padding: 20px 0; }
@@ -274,15 +307,63 @@ window.KK_DATA = {
     return h + "</div>";
   }
 
+  var WATCH_KEY = "prscc_course_watched";
+  var watched = {};
+  function loadWatched(cb) {
+    try { watched = JSON.parse(localStorage.getItem(WATCH_KEY) || "{}") || {}; } catch (e) { watched = {}; }
+    try {
+      if (tg && tg.CloudStorage && tg.isVersionAtLeast && tg.isVersionAtLeast("6.9")) {
+        tg.CloudStorage.getItem(WATCH_KEY, function (err, val) {
+          if (!err && val) { try { var w = JSON.parse(val); for (var k in w) watched[k] = w[k]; } catch (e) {} }
+          cb();
+        });
+        return;
+      }
+    } catch (e) {}
+    cb();
+  }
+  function saveWatched() {
+    var s = JSON.stringify(watched);
+    try { localStorage.setItem(WATCH_KEY, s); } catch (e) {}
+    try { if (tg && tg.CloudStorage && tg.isVersionAtLeast && tg.isVersionAtLeast("6.9")) tg.CloudStorage.setItem(WATCH_KEY, s); } catch (e) {}
+  }
+
+  function renderCourse() {
+    var K = D.course, total = K.lessons.length, done = 0;
+    K.lessons.forEach(function (l) { if (watched[l.url]) done++; });
+    var h = '<section class="course"><p class="course-kicker">' + esc(K.kicker) + " · " + total + " уроков</p>";
+    h += '<p class="course-title">' + esc(K.title) + "</p>";
+    h += '<p class="course-text">' + esc(K.text) + "</p>";
+    h += '<div class="bar"><i style="width:' + Math.round(done / total * 100) + '%"></i></div>';
+    h += '<p class="course-prog">' + (done === total ? "Курс пройден" : "Просмотрено " + done + " из " + total) + "</p></section>";
+    h += '<div class="lessons">';
+    K.lessons.forEach(function (l) {
+      var isDone = !!watched[l.url];
+      h += '<a class="lesson' + (isDone ? " done" : "") + '" href="' + esc(l.url) + '" data-url="' + esc(l.url) + '" data-lesson="' + esc(l.url) + '" target="' + target + '" rel="noopener">' +
+        '<span class="lesson-num">' + (isDone ? "✓" : esc(l.n)) + "</span>" +
+        '<span class="card-body"><span class="card-title">' + esc(l.title) + '</span><span class="lesson-text">' + esc(l.text) + "</span>" +
+        '<span class="lesson-btn">' + (isDone ? "Пересмотреть" : "Смотреть") + "</span></span></a>";
+    });
+    return h + "</div>";
+  }
+
   function renderMaterials() {
     var h = screenHead("materials");
     h += '<div class="chips"><button class="chip' + (activeTopic === null ? " on" : "") + '" data-topic="">Все</button>';
     D.topics.forEach(function (t) {
       h += '<button class="chip' + (activeTopic === t ? " on" : "") + '" data-topic="' + esc(t) + '">' + esc(t) + "</button>";
     });
-    h += '</div><div class="list">';
-    D.materials.filter(function (m) { return activeTopic === null || m.topic === activeTopic; }).forEach(function (m) { h += arrowCard(m); });
-    return h + "</div>";
+    h += "</div>";
+    var showCourse = D.course && (activeTopic === null || activeTopic === D.course.topic);
+    if (showCourse) h += renderCourse();
+    var rest = D.materials.filter(function (m) { return activeTopic === null || m.topic === activeTopic; });
+    if (rest.length) {
+      if (showCourse) h += '<h2 class="group-title">Ещё материалы</h2>';
+      h += '<div class="list">';
+      rest.forEach(function (m) { h += arrowCard(m); });
+      h += "</div>";
+    }
+    return h;
   }
 
   var WEEKDAYS = ["воскресенье","понедельник","вторник","среда","четверг","пятница","суббота"];
@@ -385,6 +466,15 @@ window.KK_DATA = {
         setTimeout(function () { hint.textContent = "Скопировать"; }, 1800);
       });
     });
+    els = app.querySelectorAll("[data-lesson]");
+    for (i = 0; i < els.length; i++) els[i].addEventListener("click", function () {
+      var u = this.getAttribute("data-lesson");
+      if (!watched[u]) {
+        watched[u] = Date.now(); saveWatched();
+        var self = this;
+        setTimeout(function () { if (document.body.contains(self)) { var y = window.scrollY; show("materials"); window.scrollTo(0, y); } }, 400);
+      }
+    });
     els = app.querySelectorAll("a[data-url]");
     for (i = 0; i < els.length; i++) els[i].addEventListener("click", onLink);
     els = app.querySelectorAll("[data-go]");
@@ -395,7 +485,13 @@ window.KK_DATA = {
     });
   }
 
-  show("home");
+  var startParam = "";
+  try { startParam = (tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param) || ""; } catch (e) {}
+  if (!startParam) { var m = /[?&#]tgWebAppStartParam=([^&]+)/.exec(loc); if (m) startParam = decodeURIComponent(m[1]); }
+  loadWatched(function () {
+    if (startParam === "course" && D.course) { activeTopic = D.course.topic; show("materials"); }
+    else show("home");
+  });
 })();
 </script>
 </body>
