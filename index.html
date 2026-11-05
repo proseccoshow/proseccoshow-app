@@ -99,7 +99,10 @@ window.KK_DATA = {
     url: "https://t.me/prosecco_show"
   },
 
-  footer: { name: "Prosecco Show", school: "Русская смекалка" }
+  footer: { name: "Prosecco Show", school: "Русская смекалка" },
+
+  // Отслеживание действий: всё уходит в n8n, сценарий «PRSCC+ — события». Пусто — не отправлять.
+  tracking: { webhook: "https://proseccoshow.app.n8n.cloud/webhook/prscc-plus" }
 };
 /* ============================================================ */
 </script>
@@ -225,6 +228,22 @@ window.KK_DATA = {
     });
   }
   var target = inTelegram ? "_self" : "_blank";
+
+  var currentScreen = "home";
+  function track(event, extra) {
+    var url = D.tracking && D.tracking.webhook;
+    if (!url) return;
+    var body = { event: event, screen: currentScreen, initData: (tg && tg.initData) || "" };
+    if (typeof startParam !== "undefined" && startParam) body.startParam = startParam;
+    for (var k in (extra || {})) body[k] = extra[k];
+    var json = JSON.stringify(body);
+    try {
+      fetch(url, { method: "POST", headers: { "Content-Type": "text/plain" }, body: json, keepalive: true, mode: "cors" }).catch(function () {});
+    } catch (e) {
+      try { navigator.sendBeacon && navigator.sendBeacon(url, json); } catch (e2) {}
+    }
+  }
+  function watchedCount() { var n = 0; for (var k in watched) n++; return n; }
   function link(url, cls, inner) {
     return '<a class="' + cls + '" href="' + esc(url) + '" data-url="' + esc(url) + '" target="' + target + '" rel="noopener">' + inner + "</a>";
   }
@@ -416,6 +435,7 @@ window.KK_DATA = {
 
   function show(screen) {
     var map = { home: renderHome, events: renderEvents, materials: renderMaterials, artlab: renderArtlab };
+    currentScreen = map[screen] ? screen : "home";
     app.innerHTML = (map[screen] || renderHome)();
     window.scrollTo(0, 0);
     bind();
@@ -423,7 +443,7 @@ window.KK_DATA = {
       try { if (screen === "home") tg.BackButton.hide(); else tg.BackButton.show(); } catch (e) {}
     }
   }
-  if (tg && tg.BackButton) { try { tg.BackButton.onClick(function () { show("home"); }); } catch (e) {} }
+  if (tg && tg.BackButton) { try { tg.BackButton.onClick(function () { show("home"); track("screen_view", { target: "home" }); }); } catch (e) {} }
 
   function postEvent(type, data) {
     var payload = data || {};
@@ -440,6 +460,8 @@ window.KK_DATA = {
 
   function onLink(e) {
     var url = this.getAttribute("data-url");
+    var ttl = this.querySelector(".card-title") ? this.querySelector(".card-title").textContent : this.textContent;
+    if (!this.hasAttribute("data-lesson")) track("link_click", { target: url, title: ttl.trim().slice(0, 120) });
     if (!url || !inTelegram) return;
     e.preventDefault();
     var isTg = url.indexOf("https://t.me/") === 0;
@@ -461,6 +483,7 @@ window.KK_DATA = {
     els = app.querySelectorAll("[data-copy]");
     for (i = 0; i < els.length; i++) els[i].addEventListener("click", function () {
       var btn = this, hint = btn.querySelector(".promo-hint");
+      track("promo_copy", { target: btn.getAttribute("data-copy") });
       copyText(btn.getAttribute("data-copy"), function () {
         hint.textContent = "Скопировано";
         try { if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success"); } catch (e) {}
@@ -468,12 +491,15 @@ window.KK_DATA = {
       });
     });
     els = app.querySelectorAll("[data-course]");
-    for (i = 0; i < els.length; i++) els[i].addEventListener("click", function () { activeTopic = D.course.topic; show("materials"); });
+    for (i = 0; i < els.length; i++) els[i].addEventListener("click", function () { track("course_banner"); activeTopic = D.course.topic; show("materials"); track("screen_view", { target: "materials:" + D.course.topic }); });
     els = app.querySelectorAll("[data-lesson]");
     for (i = 0; i < els.length; i++) els[i].addEventListener("click", function () {
       var u = this.getAttribute("data-lesson");
-      if (!watched[u]) {
-        watched[u] = Date.now(); saveWatched();
+      var first = !watched[u];
+      if (first) watched[u] = Date.now();
+      track("lesson_open", { target: u, title: this.querySelector(".card-title").textContent, repeat: !first, lessons: watchedCount() });
+      if (first) {
+        saveWatched();
         var self = this;
         setTimeout(function () { if (document.body.contains(self)) { var y = window.scrollY; show("materials"); window.scrollTo(0, y); } }, 400);
       }
@@ -481,10 +507,10 @@ window.KK_DATA = {
     els = app.querySelectorAll("a[data-url]");
     for (i = 0; i < els.length; i++) els[i].addEventListener("click", onLink);
     els = app.querySelectorAll("[data-go]");
-    for (i = 0; i < els.length; i++) els[i].addEventListener("click", function () { show(this.getAttribute("data-go")); });
+    for (i = 0; i < els.length; i++) els[i].addEventListener("click", function () { var g = this.getAttribute("data-go"); show(g); track("screen_view", { target: g }); });
     els = app.querySelectorAll("[data-topic]");
     for (i = 0; i < els.length; i++) els[i].addEventListener("click", function () {
-      var t = this.getAttribute("data-topic"); activeTopic = t || null; show("materials");
+      var t = this.getAttribute("data-topic"); activeTopic = t || null; show("materials"); track("topic", { target: t || "Все" });
     });
   }
 
@@ -492,6 +518,7 @@ window.KK_DATA = {
   try { startParam = (tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param) || ""; } catch (e) {}
   if (!startParam) { var m = /[?&#]tgWebAppStartParam=([^&]+)/.exec(loc); if (m) startParam = decodeURIComponent(m[1]); }
   loadWatched(function () {
+    track("app_open", { lessons: watchedCount(), platform: (tg && tg.platform) || "web" });
     if (startParam === "course" && D.course) { activeTopic = D.course.topic; show("materials"); }
     else show("home");
   });
