@@ -92,6 +92,28 @@ window.KK_DATA = {
     }
   },
 
+  // Лидмагнит: диагностическая сессия. Блок на главной + отдельный экран.
+  // Убрать — удалите этот блок. url — куда ведёт кнопка «Записаться» (текст сообщения подставится сам).
+  diag: {
+    tag: "30 минут · онлайн · бесплатно",
+    title: "Диагностическая сессия Prosecco Show",
+    short: "Поймите, где вы или ваша команда сейчас и что стоит развивать дальше.",
+    text: "Диагностическая сессия — это возможность понять, где вы или ваша команда сейчас находитесь и что стоит развивать дальше.",
+    team: "За время сессии можно увидеть, как люди выстраивают связи, кто берёт инициативу и какие роли складываются в группе.",
+    self: "Если вы приходите самостоятельно, тренеры смотрят, как вы мыслите в моменте, замечаете разные варианты и находите решения, когда меняются условия.",
+    resultsTitle: "По итогам сессии вы получите первичный анализ вашей команды",
+    resultsLead: "На конкретных эпизодах из упражнений тренеры покажут:",
+    results: [
+      { t: "Как распределяются роли и инициатива", d: "Кто предлагает идеи, кто помогает их развить, кто влияет на итоговое решение и кто остаётся в стороне." },
+      { t: "На что команда уже может опереться", d: "Какие действия помогают участникам слышать друг друга, быстро договариваться и сохранять темп." },
+      { t: "Где взаимодействие даёт сбой", d: "В какой момент инициатива гаснет, предложения остаются без ответа или решение затягивается." },
+      { t: "Что развивать в первую очередь", d: "И какой навык стоит отработать." }
+    ],
+    more: "Подробнее",
+    button: "Записаться на диагностику",
+    url: "https://t.me/prosecco_show",
+    message: { team: "Здравствуйте! Хочу записаться на диагностическую сессию для команды (из PRSCC+).", self: "Здравствуйте! Хочу записаться на диагностическую сессию для себя (из PRSCC+)." }
+  },
   // Консультация — блок на главной под разделами.
   consult: {
     title: "Консультация по образовательным продуктам",
@@ -190,6 +212,12 @@ window.KK_DATA = {
   .promo-code b { font-family: var(--display); font-size: 22px; letter-spacing: .04em; }
   .promo-hint { font-size: 13px; opacity: .85; }
 
+  .dg-tag { display: table; margin: 14px 0 10px; padding: 5px 12px; border-radius: 999px; background: var(--accent); color: #FFFFFF; font-size: 12px; font-weight: 700; }
+  .dg-h { font-family: var(--display); font-size: 22px; line-height: 1.2; margin-bottom: 6px; }
+  .dg-item { align-items: flex-start; }
+  .dg-n { flex: 0 0 auto; font-family: var(--display); font-size: 28px; font-weight: 900; line-height: 1; color: var(--accent); }
+  .dg-go { width: 100%; margin-top: 22px; border: 0; font: inherit; font-weight: 700; cursor: pointer; background: var(--accent); color: #FFFFFF; }
+  .dg-note { text-align: center; font-size: 13px; color: var(--muted); margin-top: 8px; }
   .consult { margin-top: 26px; padding: 22px 20px; border-radius: 22px; border: 2px solid var(--accent); }
   .consult h2 { font-family: var(--display); font-size: 20px; line-height: 1.2; margin-bottom: 8px; }
   .consult p { color: var(--muted); font-size: 15px; margin-bottom: 16px; }
@@ -297,6 +325,13 @@ window.KK_DATA = {
         '</span><span class="sec-cap">' + esc(s.caption) + '</span></span><span class="arrow" aria-hidden="true">›</span></button>';
     });
     h += "</nav>";
+    var G = D.diag;
+    if (G) {
+      h += '<section class="next"><p class="next-kicker">' + esc(G.tag) + "</p>";
+      h += '<p class="next-date">' + esc(G.title) + "</p>";
+      h += '<p class="next-place">' + esc(G.short) + "</p>";
+      h += '<button class="btn" style="width:100%;border:0;font:inherit;font-weight:700;cursor:pointer" data-go="diag">' + esc(G.more) + "</button></section>";
+    }
     var K = D.consult;
     if (K) {
       h += '<section class="consult"><h2>' + esc(K.title) + "</h2><p>" + esc(K.text) + "</p>";
@@ -423,6 +458,26 @@ window.KK_DATA = {
     return h + "</div>";
   }
 
+  var diagFor = "team";
+  function renderDiag() {
+    var G = D.diag, m = diagFor;
+    var h = '<button class="back" data-go="home">‹ Назад</button><p class="dg-tag">' + esc(G.tag) + '</p><h1 class="screen-title">' + esc(G.title) + "</h1>";
+    h += '<p class="intro">' + esc(G.text) + "</p>";
+    h += '<div class="chips"><button class="chip' + (m === "team" ? " on" : "") + '" data-diag="team">С командой</button><button class="chip' + (m === "self" ? " on" : "") + '" data-diag="self">Самостоятельно</button></div>';
+    h += '<div class="card" style="margin-bottom:26px"><span class="card-body">' + esc(G[m]) + "</span></div>";
+    h += '<h2 class="dg-h">' + esc(G.resultsTitle) + '</h2><p class="intro">' + esc(G.resultsLead) + '</p><div class="list">';
+    G.results.forEach(function (r, i) {
+      h += '<div class="card dg-item"><span class="dg-n">' + (i + 1) + '</span><span class="card-body"><span class="card-title">' + esc(r.t) + '</span><span class="card-cap">' + esc(r.d) + "</span></span></div>";
+    });
+    h += '</div><button class="btn dg-go" data-diag-go>' + esc(G.button) + '</button><p class="dg-note">' + esc(G.tag) + "</p>";
+    return h;
+  }
+  function diagUrl() {
+    var G = D.diag, msg = G.message && G.message[diagFor], u = G.url;
+    if (msg && u.indexOf("https://t.me/") === 0) u += (u.indexOf("?") === -1 ? "?" : "&") + "text=" + encodeURIComponent(msg);
+    return u;
+  }
+
   function copyText(text, done) {
     function fallback() {
       var t = document.createElement("textarea"); t.value = text; t.setAttribute("readonly", "");
@@ -436,6 +491,7 @@ window.KK_DATA = {
 
   function show(screen) {
     var map = { home: renderHome, events: renderEvents, materials: renderMaterials, artlab: renderArtlab };
+    if (D.diag) map.diag = renderDiag;
     currentScreen = map[screen] ? screen : "home";
     app.innerHTML = (map[screen] || renderHome)();
     window.scrollTo(0, 0);
@@ -465,6 +521,10 @@ window.KK_DATA = {
     if (!this.hasAttribute("data-lesson")) track("link_click", { target: url, title: ttl.trim().slice(0, 120) });
     if (!url || !inTelegram) return;
     e.preventDefault();
+    openExternal(url);
+  }
+  function openExternal(url) {
+    if (!inTelegram) { window.open(url, "_blank", "noopener"); return; }
     var isTg = url.indexOf("https://t.me/") === 0;
     if (tg) {
       if (isTg) { tg.close(); tg.openTelegramLink(url); }
@@ -509,6 +569,14 @@ window.KK_DATA = {
     for (i = 0; i < els.length; i++) els[i].addEventListener("click", onLink);
     els = app.querySelectorAll("[data-go]");
     for (i = 0; i < els.length; i++) els[i].addEventListener("click", function () { var g = this.getAttribute("data-go"); show(g); track("screen_view", { target: g }); });
+    els = app.querySelectorAll("[data-diag]");
+    for (i = 0; i < els.length; i++) els[i].addEventListener("click", function () { diagFor = this.getAttribute("data-diag"); track("diag_mode", { target: diagFor }); var y = window.scrollY; show("diag"); window.scrollTo(0, y); });
+    els = app.querySelectorAll("[data-diag-go]");
+    for (i = 0; i < els.length; i++) els[i].addEventListener("click", function (e) {
+      track("diag_signup", { target: diagFor });
+      try { if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred("medium"); } catch (e2) {}
+      openExternal(diagUrl());
+    });
     els = app.querySelectorAll("[data-topic]");
     for (i = 0; i < els.length; i++) els[i].addEventListener("click", function () {
       var t = this.getAttribute("data-topic"); activeTopic = t || null; show("materials"); track("topic", { target: t || "Все" });
@@ -521,6 +589,7 @@ window.KK_DATA = {
   loadWatched(function () {
     track("app_open", { lessons: watchedCount(), platform: (tg && tg.platform) || "web" });
     if (startParam === "course" && D.course) { activeTopic = D.course.topic; show("materials"); }
+    else if (startParam.split("__")[0] === "diag" && D.diag) show("diag");
     else show("home");
   });
 })();
