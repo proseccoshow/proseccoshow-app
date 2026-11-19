@@ -46,14 +46,35 @@ window.KK_DATA = {
   // webhook — сценарий «PRSCC+ — Пара недели» в n8n. joinDay: 0 = воскресенье.
   pairs: {
     joinDay: 0,
-    text: "В воскресенье нажмите «Я в деле» — в понедельник утром бот пришлёт вам случайного партнёра из чата. Всю неделю вы поддерживаете друг друга и переписываетесь.",
+    text: "В воскресенье нажмите «Я в деле» — в понедельник утром бот пришлёт вам случайного партнёра из чата. Всю неделю вы вместе выполняете задание недели и поддерживаете друг друга.",
     steps: [
       "Воскресенье — жмёте «Я в деле»",
       "Понедельник — бот присылает вашу пару",
-      "Неделя — переписываетесь, делитесь задачами и пробуете правила импровизации в жизни"
+      "Неделя — выполняете задание недели вместе и поддерживаете друг друга"
     ],
     button: "Я в деле",
-    webhook: "https://proseccoshow.app.n8n.cloud/webhook/prscc-pairs"
+    webhook: "https://proseccoshow.app.n8n.cloud/webhook/prscc-pairs",
+    // Задания недели: одно на неделю, по кругу. start — понедельник первого задания.
+    // Можно менять тексты, добавлять и удалять задания — порядок = очерёдность.
+    tasksStart: "2026-11-23",
+    tasks: [
+      { rule: "«Да, и…»", title: "Неделя без «нет, но»",
+        steps: ["Каждый день отвечайте на идеи друг друга только «Да, и…» — и развивайте их", "Найдите на работе или дома одну ситуацию, где приняли предложение вместо спора", "В пятницу расскажите друг другу, к чему это привело"] },
+      { rule: "«Сделай из партнёра звезду»", title: "Подсвети партнёра",
+        steps: ["Каждый день пишите паре одну сильную сторону, которую в ней заметили", "Публично отметьте вклад одного коллеги или друга", "В конце недели расскажите, как на это отреагировали"] },
+      { rule: "«Ошибки — это подарки»", title: "Коллекция подарков",
+        steps: ["Каждый день делитесь одной своей ошибкой или неловкостью", "Вместе ищите, что она вам подарила", "Соберите минимум три «подарка» к воскресенью"] },
+      { rule: "«Шутки не главное, связи решают»", title: "Неожиданные связи",
+        steps: ["Каждое утро один присылает два случайных слова", "Второй придумывает, как они связаны с его задачей на день", "Меняйтесь ролями через день и выберите лучшую связь недели"] },
+      { rule: "«Чистая голова»", title: "Пять минут присутствия",
+        steps: ["Каждый день 5 минут без телефона просто наблюдайте вокруг", "Присылайте паре три детали, которые раньше не замечали", "В конце недели обсудите, что изменилось во внимании"] },
+      { rule: "Импровизация в жизни", title: "Голосовая импровизация",
+        steps: ["Каждый день задавайте паре тему одним словом", "Отвечайте голосовым на 60 секунд — без подготовки и пауз", "Выберите самое смешное и самое неожиданное голосовое недели"] },
+      { rule: "«Да, и…»", title: "История на двоих",
+        steps: ["Сочиняйте общую историю — по одному предложению в день от каждого", "Принимайте всё, что придумал партнёр, и развивайте", "В воскресенье прочитайте историю целиком"] },
+      { rule: "«Ошибки — это подарки»", title: "Маленькая смелость",
+        steps: ["Каждый сделайте за неделю три вещи, которые обычно откладываете из-за страха", "Пишите паре до и после каждой", "Поддержите друг друга, если что-то пошло не по плану"] }
+    ]
   },
 
   // Маскот. Поп-ап показывается при первом входе, потом — по кнопке с енотом на главной.
@@ -547,6 +568,13 @@ window.KK_DATA = {
   .co-name { font-family: var(--display); font-weight: 900; font-size: 30px; line-height: .9; text-transform: lowercase; }
   .co-role { font-size: 13px; color: #A5A5A5; margin-top: 4px; line-height: 1.35; }
   .co-text { font-size: 14px; color: #D6D6D6; margin-top: 12px; line-height: 1.45; }
+
+  .task { margin: 0 0 14px; }
+  .task .next-date { font-size: 40px; }
+  .task-steps { list-style: none; counter-reset: t; margin-top: 4px; }
+  .task-steps li { counter-increment: t; position: relative; padding: 10px 0 10px 40px; border-top: 1px solid rgba(255,255,255,.22); font-size: 15px; line-height: 1.4; }
+  .task-steps li::before { content: counter(t); position: absolute; left: 0; top: 9px; width: 28px; height: 28px; border-radius: 6px; background: #FFFFFF; color: #3F63D2;
+    display: flex; align-items: center; justify-content: center; font-family: var(--display); font-weight: 900; font-size: 20px; }
 </style>
 </head>
 <body>
@@ -804,6 +832,18 @@ window.KK_DATA = {
   }
   function daysTo(wd) { var n = (wd - new Date().getDay() + 7) % 7; return n; }
   function contactUrl(u) { return u.username ? "https://t.me/" + u.username : ""; }
+  function weekTask() {
+    var P = D.pairs; if (!P.tasks || !P.tasks.length) return null;
+    var t = new Date(); t.setHours(0, 0, 0, 0); t.setDate(t.getDate() - (t.getDay() + 6) % 7);
+    var n = Math.floor(Math.round((t - parseDate(P.tasksStart || "2026-11-23")) / 864e5) / 7);
+    return P.tasks[((n % P.tasks.length) + P.tasks.length) % P.tasks.length];
+  }
+  function renderTask() {
+    var T = weekTask(); if (!T) return "";
+    var h = '<section class="next task"><p class="next-kicker">' + tags("задание недели · " + T.rule) + '</p><p class="next-date">' + esc(T.title) + '</p><ol class="task-steps">';
+    T.steps.forEach(function (st) { h += "<li>" + esc(st) + "</li>"; });
+    return h + "</ol></section>";
+  }
   function renderPairs() {
     var P = D.pairs, S = pairState;
     var h = '<h1 class="screen-title">' + esc(D.sections.pairs.title) + "</h1>";
@@ -831,6 +871,7 @@ window.KK_DATA = {
       var n = daysTo(P.joinDay);
       h += '<div class="pair-card"><p class="pair-status">Запись — в воскресенье</p><p class="card-cap">' + (n === 1 ? "Уже завтра" : "Через " + n + " " + plural(n, "день", "дня", "дней")) + ". Возвращайтесь — будет кнопка «" + esc(P.button) + "».</p></div>";
     }
+    h += renderTask();
     h += '<p class="intro" style="margin-top:22px">' + esc(P.text) + '</p><ol class="steps">';
     P.steps.forEach(function (s) { h += "<li><span>" + esc(s) + "</span></li>"; });
     return h + "</ol>";
