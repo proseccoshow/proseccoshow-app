@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Пиарщицы</title>
+<meta name="robots" content="noindex">
+<script src="../telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: собранный, бодрый, «студийный» — рабочий инструмент с характером
+   IDEA: бокал просекко — пузырьки поднимаются в синей шапке
+   PICTURE: шапка-витрина с крупными цифрами месяца и живыми пузырьками
+   COLOUR and TYPE: электрический синий + белый, жёлтый как искра; Unbounded + Manrope
+   LAYOUT: одна колонка, карточки с тонкой линией, плавающее меню-капсула */
+:root{color-scheme:light dark;
+--bg:light-dark(#f4f6ff,#07081a);--card:light-dark(#ffffff,#10122b);--ink:light-dark(#0a0f3a,#f1f3ff);--mut:light-dark(#5d6491,#9aa1d4);
+--line:light-dark(#e3e7fb,#1d2150);--blue:light-dark(#2340e0,#4d68ff);--blue2:#1a2fb8;--soft:light-dark(#eef1ff,#171a3d);--acc:#ffd23f;--r:22px}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Manrope,system-ui,sans-serif;overflow-x:clip;padding-bottom:calc(110px + env(safe-area-inset-bottom))}
+h1,h2,.num,.kn,.days{font-family:Unbounded,Manrope,sans-serif}
+h1,h2{line-height:1.08;margin:0;text-wrap:balance}
+h2{font-size:21px;font-weight:700;margin:34px 2px 14px;letter-spacing:-.01em}
+
+/* шапка */
+.top{position:relative;overflow:hidden;color:#fff;padding:calc(18px + env(safe-area-inset-top)) 18px 22px;
+background:radial-gradient(120% 90% at 100% 0,#5b78ff 0,transparent 60%),linear-gradient(160deg,#2340e0 0,#1527a6 70%,#101d86 100%);
+border-radius:0 0 34px 34px;box-shadow:0 18px 40px -22px rgba(35,64,224,.8)}
+.top>*{position:relative;z-index:1}
+.bubbles{position:absolute;inset:0;z-index:0;pointer-events:none}
+.bubbles i{position:absolute;bottom:-20px;border-radius:50%;border:1.5px solid rgba(255,255,255,.45);background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.55),rgba(255,255,255,.05) 60%);animation:rise linear infinite}
+@keyframes rise{from{transform:translateY(0);opacity:0}15%{opacity:1}to{transform:translateY(-260px);opacity:0}}
+.top small{opacity:.85;font-size:13px;text-transform:none}
+.top h1{font-size:40px;font-weight:700;letter-spacing:-.03em;margin:6px 0 12px}
+.top h1 span{color:var(--acc)}
+.me{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 18px}
+.me small{opacity:.8}
+.me button{min-height:34px;padding:0 14px;border-radius:99px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);font-weight:600;font-size:14px}
+.me button.on{background:#fff;color:#1a2fb8;border-color:#fff}
+.month{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.month div{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:18px;padding:12px;backdrop-filter:blur(6px)}
+.month .num{font-size:clamp(20px,6vw,26px);font-weight:700;display:block;line-height:1.1;white-space:nowrap}
+.month span{font-size:12px;opacity:.85;line-height:1.25;display:block;margin-top:4px}
+#sync{font-size:12px;white-space:nowrap;padding:3px 10px;border-radius:99px;background:rgba(255,255,255,.14)}
+
+.wrap{max-width:640px;margin:0 auto;padding:0 16px}
+.view{display:none;animation:fade .25s ease}.view.on{display:block}.sub{display:none}.sub.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:10px;box-shadow:0 1px 0 rgba(10,15,58,.03)}
+.brief{background:linear-gradient(150deg,var(--card) 40%,var(--soft));border-color:var(--line);position:relative;overflow:hidden}
+.brief>b{font-family:Unbounded,sans-serif;font-size:17px;display:block;margin-bottom:4px}
+.brief::after{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,var(--acc) 0,transparent 70%);opacity:.25}
+.row{display:flex;gap:10px;align-items:center}
+.grow{flex:1}
+.mut{color:var(--mut);font-size:14px}
+.tag{display:inline-flex;align-items:center;font-size:12.5px;font-weight:600;padding:3px 10px;border-radius:99px;background:var(--soft);border:1px solid var(--line);white-space:nowrap;color:var(--ink)}
+.tag.hot{background:var(--acc);border-color:var(--acc);color:#0a0f3a}
+button,input,select,textarea{font:inherit;font-size:16px;color:inherit}
+button{min-height:46px;border:0;border-radius:14px;padding:0 18px;background:var(--blue);color:#fff;font-weight:700;cursor:pointer;transition:transform .12s,filter .12s}
+button:active{transform:scale(.97)}
+button.ghost{background:transparent;color:var(--blue);border:1.5px solid var(--line)}
+button.sq{width:46px;padding:0;font-size:22px;flex:none}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+input,select,textarea{width:100%;min-height:48px;border:1.5px solid var(--line);border-radius:14px;padding:11px 14px;background:var(--card)}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);outline:none}
+textarea{min-height:96px;resize:vertical}
+label{display:block;font-size:13.5px;font-weight:600;color:var(--mut);margin:14px 0 6px}
+.chk{width:26px;height:26px;min-height:0;flex:none;border-radius:50%;border:2px solid var(--blue);background:transparent;padding:0}
+.chk.done{background:var(--blue) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5 9-10'/%3E%3C/svg%3E") center/62% no-repeat}
+.done-t{text-decoration:line-through;color:var(--mut)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.chips button{min-height:38px;padding:0 15px;border-radius:99px;background:var(--card);color:var(--ink);font-weight:600;font-size:14.5px;border:1px solid var(--line);display:inline-flex;align-items:center;text-align:left}
+.chips button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.seg{background:var(--soft);padding:4px;border-radius:99px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;border:1px solid var(--line)}
+.seg button{border:0;background:transparent;justify-content:center;min-height:40px}
+.seg button.on{background:var(--card);color:var(--blue);box-shadow:0 2px 8px rgba(10,15,58,.12)}
+#aiQuick button{min-height:40px;padding:8px 15px;font-size:14px;line-height:1.3}
+.days{font-size:22px;font-weight:700;color:var(--blue);width:58px;height:58px;flex:none;text-align:center;line-height:1;background:var(--soft);border-radius:16px;display:flex;flex-direction:column;justify-content:center}
+.days small{display:block;font-family:Manrope;font-weight:600;font-size:11px;color:var(--mut);margin-top:4px}
+a{color:var(--blue);font-weight:700}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.acts a,.acts button{min-height:36px;font-size:13.5px;display:inline-flex;align-items:center;padding:0 13px;border-radius:99px;border:1px solid var(--line);background:var(--soft);color:var(--blue);text-decoration:none;font-weight:700}
+pre{white-space:pre-wrap;font:15px/1.6 Manrope,sans-serif;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--blue);border-radius:var(--r);padding:16px 18px;margin:14px 0}
+.bar{height:8px;background:var(--soft);border-radius:99px;overflow:hidden;margin-top:12px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),#7d93ff);border-radius:99px;transition:width .4s}
+.bar i.full{background:var(--acc)}
+.kn{font-size:22px;font-weight:700;white-space:nowrap;min-width:28px;text-align:center}
+.ava{width:30px;height:30px;border-radius:50%;flex:none;display:inline-grid;place-items:center;font-weight:700;font-size:12.5px;color:#fff;box-shadow:0 0 0 2px var(--card)}
+.chips button .ava{width:22px;height:22px;font-size:11px;margin-right:7px;box-shadow:none}
+.msg{border-radius:22px;padding:13px 16px;margin-bottom:10px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.55}
+.msg.u{background:var(--blue);color:#fff;margin-left:14%;border-bottom-right-radius:6px}
+.msg.a{background:var(--card);border:1px solid var(--line);margin-right:6%;border-bottom-left-radius:6px}
+.msg.a .acts button{background:var(--soft)}
+button:disabled{opacity:.55}
+
+/* меню-капсула */
+nav{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));max-width:560px;margin:0 auto;z-index:5;
+display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:6px;border-radius:26px;
+background:light-dark(rgba(255,255,255,.82),rgba(20,23,54,.82));backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);
+border:1px solid var(--line);box-shadow:0 12px 34px -12px rgba(10,15,58,.45)}
+nav a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11.5px;font-weight:700;color:var(--mut);text-decoration:none;min-height:56px;border-radius:20px;transition:background .2s,color .2s}
+nav a.on{color:#fff;background:var(--blue)}
+nav svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+.toast{position:fixed;left:50%;bottom:calc(100px + env(safe-area-inset-bottom));transform:translate(-50%,10px);background:var(--ink);color:var(--bg);padding:11px 20px;border-radius:99px;font-size:14px;font-weight:600;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:9;max-width:90vw;text-align:center}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+details summary{cursor:pointer;font-weight:700;color:var(--blue);min-height:44px;display:flex;align-items:center;gap:10px;list-style:none}
+details summary::-webkit-details-marker{display:none}
+details.card>summary::after{content:"+";margin-left:auto;font-size:22px;font-weight:400;transition:transform .2s}
+details.card[open]>summary::after{transform:rotate(45deg)}
+.hist{margin-top:12px;border-top:1px solid var(--line);padding-top:4px}.hist summary{font-size:13.5px;min-height:36px;color:var(--mut)}
+.g2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.topt{margin:-2px 0 6px}.topt summary{font-size:14px;min-height:36px;color:var(--mut)}
+.flag{display:inline-block;font-size:11px;font-weight:800;color:#fff;background:#ff4d6d;border-radius:99px;padding:1px 8px;margin-right:4px;vertical-align:2px}
+.tm{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.tm .tag{font-size:12px;padding:1px 9px}.tag.late{background:#ff4d6d;border-color:#ff4d6d;color:#fff}.tag.now{background:var(--blue);border-color:var(--blue);color:#fff}
+.note{font-size:13px;color:var(--mut);margin:10px 2px 0}
+#gate[hidden]{display:none}#gate{position:fixed;inset:0;z-index:20;background:var(--bg);display:grid;place-items:center;padding:24px}
+.gate{max-width:420px;text-align:center}.gate h2{margin:0 0 12px;font-size:26px}.gate p{color:var(--mut);font-size:16px}.gate b{color:var(--ink);user-select:all}
+.hi{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:15px}.hi .ava{box-shadow:0 0 0 2px rgba(255,255,255,.6)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="top"><div class="bubbles" id="bubbles" aria-hidden="true"></div>
+  <div class="row"><small id="date" class="grow"></small><small id="sync">Подключаюсь…</small></div>
+  <h1>Пиарщицы<span>.</span></h1>
+  <div class="me" id="me" role="group" aria-label="Кто я"></div>
+  <div class="month" id="month"></div>
+</header>
+
+<div class="wrap">
+  <section class="view" id="v-today">
+    <div id="brief" style="margin-top:16px"></div>
+    <h2>Задачи</h2>
+    <form id="taskForm"><div class="row"><input id="taskIn" placeholder="Новая задача: позвонить, отправить релиз…" aria-label="Новая задача"><button class="sq" aria-label="Добавить">+</button></div><div class="chips" id="taskWho" role="group" aria-label="Кому"></div><details class="topt" id="topt"><summary>Срок, срочность, повтор</summary><div class="g2"><div><label for="taskDue">Срок</label><input id="taskDue" type="date"></div><div><label for="taskRep">Повтор</label><select id="taskRep"><option value="">Без повтора</option><option value="d">Каждый день</option><option value="w">Каждую неделю</option><option value="m">Каждый месяц</option></select></div></div><label class="row" style="color:var(--ink);font-size:15px;margin-top:12px"><input type="checkbox" id="taskHi" style="width:22px;min-height:22px;flex:none"> Срочно</label></details></form>
+    <div class="chips" id="taskF"></div>
+    <div id="tasks"></div>
+    <h2>Ждут ответа</h2>
+    <div id="wait"></div>
+    <h2>Ближайшее</h2>
+    <div id="events"></div>
+    <details class="card"><summary>Добавить событие</summary>
+      <form id="evForm"><label for="evT">Что</label><input id="evT" required placeholder="Эфир, выход публикации, конференция">
+      <label for="evD">Когда</label><input id="evD" type="date" required>
+      <div style="margin-top:12px"><button>Сохранить</button></div></form>
+    </details>
+    <h2>Дни рождения контактов</h2>
+    <div id="bdays"></div>
+  </section>
+
+  <section class="view" id="v-media">
+    <h2>Медиабаза</h2>
+    <button id="nImport" class="ghost" style="width:100%">Обновить из Notion</button>
+    <p class="note" id="nNote" style="margin-bottom:10px"></p>
+    <input id="q" type="search" placeholder="Поиск: имя, издание, тема" aria-label="Поиск по контактам">
+    <div class="chips" id="types"></div>
+    <div id="contacts"></div>
+    <details class="card"><summary>Новый контакт</summary>
+      <form id="cForm">
+        <label for="cN">Имя</label><input id="cN" required>
+        <label for="cO">Издание / канал</label><input id="cO" required>
+        <label for="cTy">Тип</label><select id="cTy"><option>СМИ</option><option>ТВ</option><option>Блогер</option><option>Партнёр</option></select>
+        <label for="cTo">Тема</label><input id="cTo" placeholder="культура, бизнес, HR…">
+        <label for="cTg">Telegram</label><input id="cTg" placeholder="@username">
+        <label for="cE">Email</label><input id="cE" type="email">
+        <label for="cB">День рождения</label><input id="cB" type="date">
+        <label for="cW">Ведёт</label><select id="cW"></select>
+        <div style="margin-top:12px"><button>Добавить</button></div>
+      </form>
+    </details>
+    <p class="note">Тап по статусу меняет его: холодный → в работе → вышла публикация. Цветной кружок — кто ведёт контакт.</p>
+  </section>
+
+  <section class="view" id="v-pitch">
+    <h2>Тексты</h2>
+    <div class="seg chips" id="seg"><button type="button" data-a="sub" data-s="pitch">Питч</button><button type="button" data-a="sub" data-s="tpl">Шаблоны</button><button type="button" data-a="sub" data-s="kit">Пресс-кит</button></div>
+    <div class="sub" id="sub-pitch">
+    <label for="pC">Кому</label><select id="pC"></select>
+    <label for="pR">Инфоповод</label>
+    <select id="pR">
+      <option value="show">Шоу / афиша лейбла</option>
+      <option value="edu">Школа Русской Смекалки (B2B)</option>
+      <option value="collab">Коллаборация с брендом</option>
+      <option value="star">Звезда на нашей сцене</option>
+    </select>
+    <label for="pF">Формат</label>
+    <select id="pF">
+      <option value="news">Новость / анонс</option>
+      <option value="interview">Интервью с основателями</option>
+      <option value="special">Спецпроект</option>
+      <option value="expert">Экспертный комментарий</option>
+    </select>
+    <label for="pD">Что конкретно (дата, имя, деталь)</label>
+    <textarea id="pD" placeholder="Например: 28 ноября большое новогоднее шоу с гостем из Comedy"></textarea>
+    <pre id="pOut"></pre>
+    <div class="row"><button id="copyP" class="grow">Скопировать</button><button id="sentP" class="ghost">Отправлен</button></div>
+    <div style="margin-top:10px"><button id="aiPitch" class="ghost" style="width:100%">Улучшить с ИИ</button></div>
+  </div>
+    <div class="sub" id="sub-tpl">
+      <div id="tpls"></div>
+      <details class="card"><summary>Новый шаблон</summary><form id="tForm"><label for="tT">Название</label><input id="tT" required><label for="tB">Текст</label><textarea id="tB" required style="min-height:160px" placeholder="Что подставить — в [квадратных скобках]"></textarea><div style="margin-top:12px"><button>Сохранить</button></div></form></details>
+      <p class="note">В [скобках] — что подставить. «Адаптировать с ИИ» заполнит их данными из приложения.</p>
+    </div>
+    <div class="sub" id="sub-kit">
+      <div id="kitView"></div>
+      <div class="row" id="kitBtns" style="margin-top:10px"><button id="kitCopy" class="grow">Скопировать пресс-кит</button><button id="kitEdit" class="ghost">Изменить</button></div>
+      <form id="kitForm" hidden></form>
+      <p class="note">Вставь ссылки на папки с фото и логотипами — журналисту уйдёт всё одним сообщением.</p>
+    </div>
+  </section>
+
+  <section class="view" id="v-ai">
+    <h2>ИИ-ассистент</h2>
+    <p class="mut" id="aiNote">Подключаюсь…</p>
+    <div class="chips" id="aiQuick"></div>
+    <div id="chat"></div>
+    <form id="aiForm"><textarea id="aiIn" placeholder="Спроси что угодно: релиз, питч, идеи, кому написать…" aria-label="Вопрос ассистенту"></textarea><div style="margin-top:8px"><button id="aiSend" style="width:100%">Спросить</button></div></form>
+  </section>
+
+  <section class="view" id="v-kpi">
+    <h2>KPI месяца</h2>
+    <div id="kpi"></div>
+    <h2>Кто сколько вывел</h2>
+    <div id="team"></div>
+    <h2>Журнал выходов</h2>
+    <form id="logForm"><div class="row"><input id="logIn" placeholder="Где вышло: издание, ссылка" aria-label="Новая запись в журнал"><button class="sq" aria-label="Добавить">+</button></div><label id="logNl" class="row" style="color:var(--ink);font-size:15px" hidden><input type="checkbox" id="logN" style="width:22px;min-height:22px;flex:none"> Записать в Notion «Питчи и публикации»</label></form>
+    <div id="log" style="margin-top:10px"></div>
+    <div style="margin-top:20px"><button data-a="aireport" style="width:100%">Отчёт за месяц для Руслана</button></div>
+    <div style="margin-top:10px"><button class="ghost" id="reset">Начать новый месяц</button></div>
+    <p class="note">Запись в журнал автоматически добавляет +1 к публикациям.</p>
+  </section>
+</div>
+
+<nav>
+  <a href="#today" data-v="today"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Сегодня</a>
+  <a href="#media" data-v="media"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-6 7-6s7 2 7 6M17 4a4 4 0 0 1 0 8M22 21c0-3-1.5-5-4-5.7"/></svg>База</a>
+  <a href="#pitch" data-v="pitch"><svg viewBox="0 0 24 24"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></svg>Тексты</a>
+  <a href="#ai" data-v="ai"><svg viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9zM19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>ИИ</a>
+  <a href="#kpi" data-v="kpi"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>KPI</a>
+</nav>
+<div class="toast" id="toast"></div>
+<div id="gate" hidden></div>
+
+<script>
+{
+const DEF_KIT={
+  facts:`Prosecco Show — первый в России лейбл комедийной и музыкальной импровизации.
+600+ импро-шоу.
+30+ звёзд СНГ на нашей сцене.
+Два направления: живые шоу и корпоративное обучение «Школа Русской Смекалки» по методике «5 золотых правил» импровизации.`,
+  about:`Prosecco Show — первый в России лейбл комедийной и музыкальной импровизации. На сцене лейбла прошло больше 600 импро-шоу и выступили больше 30 звёзд СНГ. Каждое шоу создаётся здесь и сейчас — без сценария, вместе со зрителями. Импровизацию мы считаем не только жанром, но и навыком, которому можно научиться: в «Школе Русской Смекалки» по методике «5 золотых правил» её осваивают команды, руководители и HR.`,
+  people:`[Основатели и спикеры: имя, роль, короткое био]`,
+  cases:`Эфир на НТВ [ссылка]
+Коллаборации и партнёрства: N68, Путник, Fitstars, Hiker, VIBE, Frambini`,
+  links:`Фото: [ссылка на папку]
+Логотипы: [ссылка]
+Видео: [ссылка]
+Сайт и соцсети: [ссылки]`,
+  contact:`Анастасия Белых, медиадиректор Prosecco Show — Telegram @anast_bell`};
+const KIT_F=[['facts','Ключевые факты'],['about','О компании — абзац для релизов'],['people','Спикеры и основатели'],['cases','Кейсы и эфиры'],['links','Фото, логотипы, видео, сайт'],['contact','Контакт для СМИ']];
+const DEF_TPL=[
+  {cat:'Релиз',title:'Пресс-релиз: анонс шоу',body:`[Заголовок: что, где, когда — одним предложением]
+
+[Дата], [площадка] — Prosecco Show, первый в России лейбл комедийной и музыкальной импровизации, представит [название шоу]. [Чем это шоу особенное — 1–2 предложения].
+
+В этот вечер на сцене: [артисты, гость]. Как всегда, без сценария: сюжет, песни и шутки рождаются прямо в зале из идей зрителей.
+
+«[Цитата основателя или артиста — живая, с историей]», — говорит [имя, роль].
+
+Билеты: [ссылка]. Начало в [время], [возраст]+.
+
+О Prosecco Show
+Первый в России лейбл комедийной и музыкальной импровизации. 600+ импро-шоу, 30+ звёзд СНГ на сцене.
+
+Контакт для СМИ: [имя], [Telegram / телефон]`},
+  {cat:'СМИ',title:'Ответ на запрос журналиста',body:`Здравствуйте, [имя]!
+
+Спасибо за запрос — с радостью поможем с материалом про [тема].
+
+Можем предложить комментарий [спикер, роль]: [2–3 тезиса, о чём он расскажет]. Если удобнее — подготовим ответы письменно до [дата/время] или организуем короткий созвон.
+
+Фото и подписи пришлю сразу, как подтвердите формат.`},
+  {cat:'СМИ',title:'Напоминание, если молчат',body:`[Имя], добрый день!
+
+Возвращаюсь к письму про [повод] — понимаю, что у вас плотный поток. Коротко: [одно предложение — суть и чем интересно читателям].
+
+Если тема не подходит сейчас, скажите — предложу другой формат или вернусь ближе к [дата].`},
+  {cat:'СМИ',title:'Спасибо за публикацию',body:`[Имя], спасибо за материал! Получилось [что понравилось — конкретно].
+
+Поделились у себя в соцсетях. Если будете готовить что-то про [тема] — у нас скоро [ближайший инфоповод], буду рада рассказать первыми.`},
+  {cat:'Партнёры',title:'Предложение коллаборации бренду',body:`Здравствуйте, [имя]!
+
+Меня зовут [имя], я [роль] Prosecco Show — первого в России лейбла комедийной и музыкальной импровизации. 600+ шоу, 30+ звёзд СНГ на сцене.
+
+Мы встраиваем бренды прямо в импровизацию: артисты обыгрывают продукт в моменте, вместе с залом — поэтому интеграцию не пролистывают, а запоминают. Так мы уже работали с [кейсы].
+
+Для [бренд] предлагаем: [формат — шоу, спецвыпуск, корпоратив, контент]. Подготовлю пакет с охватами и вариантами — удобно созвониться на [день]?`},
+  {cat:'B2B',title:'Питч Школы Русской Смекалки в деловое СМИ',body:`Здравствуйте, [имя]!
+
+Предлагаю тему для [издание]: как импровизация стала рабочим инструментом для команд.
+
+В Школе Русской Смекалки Prosecco Show обучают руководителей и сотрудников по методике «5 золотых правил» импровизации — например, «Сделай из партнёра звезду». Это про переговоры, работу с неопределённостью и командное доверие.
+
+Можем дать экспертную колонку или интервью с [спикер], а также кейс компании, которая прошла обучение [уточнить, можно ли называть].`}];
+
+const TEAM=[
+  {k:'nastya',n:'Настя',full:'Анастасия',r:'медиадиректор',tg:'@anast_bell',c:'#2340e0'},
+  {k:'lera',n:'Лера',full:'Лера',r:'PR-менеджер',tg:'',c:'#d63f78'},
+  {k:'yulia',n:'Юля',full:'Юля',r:'PR-менеджер',tg:'',c:'#0f9a76'}];
+const tm=k=>TEAM.find(t=>t.k===k)||TEAM[0];
+const ava=k=>{const t=tm(k);return `<span class="ava" style="background:${t.c}" title="${t.n}">${t.n[0]}</span>`};
+const LKEY='prpult-v2';
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+const iso=d=>new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);
+const t0=new Date();t0.setHours(0,0,0,0);
+const plus=n=>{const d=new Date(t0);d.setDate(d.getDate()+n);return iso(d)};
+const DEFK={pub:[0,10],tv:[0,2],collab:[0,3],leads:[0,15],guests:[0,4]};
+const COLS=['tasks','contacts','events','log','tpl'];
+let ME=lsGet('prpult-me')||'nastya';
+let MODE='local',db=null,sample=null,mcp=null,sub='pitch';
+let S=null;try{S=JSON.parse(lsGet(LKEY))}catch(e){}
+if(!S||!S.kpi){const k=(8-t0.getDay())%7||7;S={tasks:[{id:'t1',t:'Отправить анонс новогоднего шоу в городские медиа',d:false,who:'nastya',at:Date.now()}],contacts:[],events:[{id:'e1',t:'Арт Лаб, 19:00',d:plus(k)}],log:[],kpi:JSON.parse(JSON.stringify(DEFK))}}
+if(!S.tpl)S.tpl=DEF_TPL.map((x,i)=>({...x,id:'tpl'+i}));if(!S.kit)S.kit={...DEF_KIT};
+const saveLocal=()=>{if(MODE==='local')lsSet(LKEY,JSON.stringify(S))};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pl=(n,a,b,c)=>{const m=n%10,h=n%100;return m===1&&h!==11?a:m>=2&&m<=4&&(h<10||h>=20)?b:c};
+const dIn=d=>Math.round((new Date(d+'T00:00')-t0)/864e5);
+const fmt=d=>new Date(d+'T00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'long'});
+const bIn=md=>{if(!md)return 999;const[m,d]=md.split('-').map(Number);const x=new Date(t0.getFullYear(),m-1,d);if(x<t0)x.setFullYear(x.getFullYear()+1);return Math.round((x-t0)/864e5)};
+const when=n=>n===0?'сегодня':n===1?'завтра':'через '+n+' '+pl(n,'день','дня','дней');
+const STAT=['холодный','в работе','вышла публикация'];
+const KL={pub:'Публикации',tv:'ТВ и эфиры',collab:'Коллаборации',leads:'Лиды образования',guests:'Гости на шоу'};
+let fType='Все',tF='me',newWho=ME;
+const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('on'),1800)};
+const copy=async txt=>{try{await navigator.clipboard.writeText(txt);toast('Скопировано')}catch(e){toast('Выдели текст и скопируй вручную')}};
+const nid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+
+/* ---------- данные: общая база или это устройство ---------- */
+function upLocal(c,o){const i=S[c].findIndex(x=>x.id===o.id);if(i>=0)S[c][i]=o;else S[c].push(o)}
+async function put(c,o){
+  o={...o,id:o.id||nid()};upLocal(c,o);all();
+  if(MODE==='db'){const b={...o};delete b.id;try{await db.collection(c).doc(o.id).set(b)}catch(e){toast(e.code==='invalid_argument'?'Нет прав на запись — попроси Настю дать доступ':'Не сохранилось, попробуй ещё раз')}}
+  return o.id;
+}
+async function del(c,id){
+  S[c]=S[c].filter(x=>x.id!==id);all();
+  if(MODE==='db'){try{await db.collection(c).doc(id).delete()}catch(e){toast('Не удалилось')}}
+}
+let kBusy=Promise.resolve();
+function setKpi(){all();if(MODE==='db'){const snap=JSON.parse(JSON.stringify(S.kpi));kBusy=kBusy.then(()=>db.doc('meta/kpi').set(snap)).catch(()=>toast('KPI не сохранились'))}}
+
+/* ---------- отрисовка ---------- */
+function head(){
+  $('#date').textContent=new Date().toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'});
+  $('#me').innerHTML=`<span class="hi">${ava(ME)} Привет, ${tm(ME).n}!</span>`;
+  const k=S.kpi,open=S.tasks.filter(x=>!x.d&&x.who===ME).length;
+  $('#month').innerHTML=[[k.pub[0]+'/'+k.pub[1],'публикаций'],[k.tv[0]+'/'+k.tv[1],'эфиров'],[open,pl(open,'моя задача','мои задачи','моих задач')]].map(([a,b])=>`<div><b class="num">${a}</b><span>${b}</span></div>`).join('');
+}
+const REPL={d:'каждый день',w:'каждую неделю',m:'каждый месяц'};
+function nextDue(d,r){const x=new Date(d+'T00:00');const step=()=>{if(r==='d')x.setDate(x.getDate()+1);else if(r==='w')x.setDate(x.getDate()+7);else x.setMonth(x.getMonth()+1)};step();while(iso(x)<=plus(0))step();return iso(x)}
+function trank(x){if(x.d)return 9;if(x.due&&dIn(x.due)<0)return 0;if(x.pr==='hi')return 1;if(x.due&&dIn(x.due)<=1)return 2;return 3}
+function tmeta(x){const t=[];if(x.due&&!x.d){const n=dIn(x.due);t.push(n<0?`<span class="tag late">просрочено ${-n} ${pl(-n,'день','дня','дней')}</span>`:n===0?'<span class="tag now">сегодня</span>':n===1?'<span class="tag">завтра</span>':`<span class="tag">до ${fmt(x.due)}</span>`)}if(x.rep)t.push(`<span class="tag">↻ ${REPL[x.rep]}</span>`);return t.length?`<span class="tm">${t.join('')}</span>`:''}
+function waiting(){return S.contacts.filter(c=>c.wait&&c.lt&&dIn(c.lt)<=-3).map(c=>({...c,ago:-dIn(c.lt)})).sort((a,b)=>b.ago-a.ago)}
+function brief(){
+  const mine=S.tasks.filter(x=>!x.d&&x.who===ME),my=mine.length,od=mine.filter(x=>x.due&&dIn(x.due)<0).length,td=mine.filter(x=>x.due&&dIn(x.due)===0).length,ev=S.events.filter(x=>{const n=dIn(x.d);return n>=0&&n<=1}),w=waiting(),bd=S.contacts.filter(c=>bIn(c.b)<=3);
+  const L=[...(od?[[od,'просрочено — начни с них']]:[]),[my,pl(my,'задача','задачи','задач')+' на тебе'+(td?', на сегодня — '+td:'')],[ev.length,ev.length?'сегодня-завтра: '+ev.map(x=>x.t).join(', '):'событий сегодня-завтра'],[w.length,pl(w.length,'контакт ждёт','контакта ждут','контактов ждут')+' напоминания'],[bd.length,pl(bd.length,'день рождения','дня рождения','дней рождения')+' в ближайшие 3 дня']];
+  $('#brief').innerHTML=`<div class="card brief"><b>Бриф на сегодня, ${tm(ME).n}</b>${L.map(([n,t])=>`<div class="row" style="margin-top:8px"><span class="kn" style="width:34px;font-size:18px">${n}</span><span class="grow">${esc(t)}</span></div>`).join('')}<div class="acts"><button data-a="aibrief">Разобрать с ИИ: что делать первым</button></div></div>`;
+  $('#wait').innerHTML=w.length?w.map(c=>`<div class="card"><div class="row">${ava(c.who)}<b class="grow">${esc(c.n)}</b><span class="tag ${c.ago>=7?'hot':''}">${c.ago} ${pl(c.ago,'день','дня','дней')}</span></div><div class="mut">${esc((c.h&&c.h.length?c.h[c.h.length-1].t:'питч'))}</div><div class="acts"><button data-a="aifollow" data-id="${esc(c.id)}">Напоминание с ИИ</button>${c.tg?`<a href="https://t.me/${esc(c.tg.replace('@',''))}">Telegram</a>`:''}<button data-a="answered" data-id="${esc(c.id)}">Ответил</button></div></div>`).join(''):'<p class="mut">Никто не завис — все питчи в движении.</p>';
+}
+function today(){
+  brief();
+  $('#taskWho').innerHTML='<span class="mut" style="align-self:center">Кому:</span>'+TEAM.map(t=>`<button type="button" class="${t.k===newWho?'on':''}" data-a="who" data-k="${t.k}">${ava(t.k)}${t.n}</button>`).join('');
+  $('#taskF').innerHTML=[['me','Мои'],['all','Все'],...TEAM.filter(t=>t.k!==ME).map(t=>[t.k,t.n])].map(([k,l])=>`<button type="button" class="${tF===k?'on':''}" data-a="tf" data-k="${k}">${l}</button>`).join('');
+  const f=tF==='me'?ME:tF;
+  const list=S.tasks.filter(x=>tF==='all'||x.who===f).sort((a,b)=>trank(a)-trank(b)||(a.due||'9').localeCompare(b.due||'9')||((b.at||0)-(a.at||0)));
+  $('#tasks').innerHTML=list.length?list.map(x=>`<div class="card row"><button class="chk ${x.d?'done':''}" data-a="task" data-id="${esc(x.id)}" aria-label="Готово"></button><span class="grow"><span class="${x.d?'done-t':''}">${x.pr==='hi'&&!x.d?'<b class="flag">Срочно</b> ':''}${esc(x.t)}</span>${tmeta(x)}</span>${ava(x.who)}<button class="ghost sq" data-a="deltask" data-id="${esc(x.id)}" aria-label="Удалить">×</button></div>`).join(''):'<p class="mut">Задач нет — красота.</p>';
+  const ev=S.events.map(x=>({...x,n:dIn(x.d)})).filter(x=>x.n>=0).sort((a,b)=>a.n-b.n);
+  $('#events').innerHTML=ev.length?ev.map(x=>`<div class="card row"><div class="days">${x.n}<small>${pl(x.n,'день','дня','дней')}</small></div><div class="grow"><b>${esc(x.t)}</b><div class="mut">${fmt(x.d)}</div></div><button class="ghost sq" data-a="delev" data-id="${esc(x.id)}" aria-label="Удалить">×</button></div>`).join(''):'<p class="mut">Ничего не запланировано.</p>';
+  const bd=S.contacts.map(c=>({...c,n2:bIn(c.b)})).filter(c=>c.n2<=14).sort((a,b)=>a.n2-b.n2);
+  $('#bdays').innerHTML=bd.length?bd.map(c=>`<div class="card"><div class="row"><b class="grow">${esc(c.n)}</b><span class="tag ${c.n2<=2?'hot':''}">${when(c.n2)}</span></div><div class="mut">${esc(c.o)} · ведёт ${tm(c.who).n}</div>${c.tg?`<div class="acts"><a href="https://t.me/${esc(c.tg.replace('@',''))}">Поздравить в Telegram</a></div>`:''}</div>`).join(''):'<p class="mut">В ближайшие две недели никого.</p>';
+}
+function media(){
+  $('#types').innerHTML=['Все','Мои',...new Set(S.contacts.map(c=>c.ty).filter(Boolean))].map(t=>`<button type="button" class="${t===fType?'on':''}" data-a="type" data-t="${t}">${t}</button>`).join('');
+  $('#cW').innerHTML=TEAM.map(t=>`<option value="${t.k}" ${t.k===ME?'selected':''}>${t.n}</option>`).join('');
+  const q=$('#q').value.trim().toLowerCase();
+  const list=S.contacts.filter(c=>(fType==='Все'||(fType==='Мои'?c.who===ME:c.ty===fType))&&(!q||(c.n+' '+c.o+' '+c.to).toLowerCase().includes(q))).sort((a,b)=>a.n.localeCompare(b.n,'ru'));
+  $('#contacts').innerHTML=list.length?list.map(c=>`<div class="card"><div class="row">${ava(c.who)}<b class="grow">${esc(c.n)}</b><button class="tag ${c.s===2?'hot':''}" style="min-height:32px;color:inherit;font-weight:600" data-a="stat" data-id="${esc(c.id)}">${STAT[c.s]||STAT[0]}</button></div>
+    <div class="mut">${esc(c.ty)} · ${esc(c.o)}${c.to?' · '+esc(c.to):''}</div>${c.note?`<div class="mut" style="margin-top:4px">${esc(c.note)}</div>`:''}
+    <div class="acts">${c.tg?`<a href="https://t.me/${esc(c.tg.replace('@',''))}">Telegram</a>`:''}${c.e?`<button data-a="mail" data-id="${esc(c.id)}">${esc(c.e)}</button>`:''}<button data-a="topitch" data-id="${esc(c.id)}">Написать питч</button><button data-a="delc" data-id="${esc(c.id)}">Удалить</button></div>${histHtml(c)}</div>`).join(''):`<p class="mut">${S.contacts.length?'Никого не нашлось.':'База пока пустая — добавь первый контакт ниже.'}</p>`;
+}
+const R={
+  show:'зову вас на шоу лейбла — это импровизация без сценария: каждый вечер уникален, зал соавтор',
+  edu:'у нас есть Школа Русской Смекалки — корпоративное обучение на импровизации по методике «5 золотых правил». Импровизация тут не развлечение, а навык, которому можно научить команду',
+  collab:'ищем бренды для коллабораций — встраиваем продукт прямо в импровизацию, так что его не пролистывают, а запоминают',
+  star:'у нас на сцене выступит звезда — а импровизация показывает артиста таким, каким его ещё не видели'};
+const F={
+  news:'Предлагаю короткую новость или анонс',
+  interview:'Предлагаю интервью с основателями лейбла: как импровизация стала профессией и бизнесом',
+  special:'Предлагаю спецпроект: например, импро-сессию прямо в редакции или формат «журналист выходит на сцену»',
+  expert:'Могу дать экспертный комментарий о том, как навыки импровизации помогают в работе и жизни'};
+function pitch(){
+  const sel=$('#pC'),cur=sel.value;
+  sel.innerHTML='<option value="">Без адресата</option>'+S.contacts.map(c=>`<option value="${esc(c.id)}">${esc(c.n)} — ${esc(c.o)}</option>`).join('');
+  sel.value=S.contacts.some(c=>c.id===cur)?cur:'';
+  const c=S.contacts.find(x=>x.id===sel.value),d=$('#pD').value.trim(),me=tm(ME);
+  const name=c?c.n.split(' ')[0]:'';
+  $('#pOut').textContent=`Здравствуйте${name?', '+name:''}!
+
+Меня зовут ${me.full}, я ${me.r} Prosecco Show — первого в России лейбла комедийной и музыкальной импровизации. За плечами 600+ импро-шоу и 30+ звёзд СНГ на нашей сцене.
+
+Коротко: ${R[$('#pR').value]}.${d?'\n\n'+d+'.':''}
+
+${F[$('#pF').value]}${c?' для «'+c.o+'»':''}. Пришлю фото, видео и все детали.
+
+${me.tg?'Удобно обсудить в Telegram? Я тут: '+me.tg:'Как вам удобнее продолжить — здесь или в Telegram?'}`;
+}
+function kpi(){
+  $('#kpi').innerHTML=Object.entries(S.kpi).filter(([k])=>KL[k]).map(([k,[n,g]])=>{const p=Math.min(100,Math.round(n/g*100));return `<div class="card"><div class="row"><div class="grow"><b>${KL[k]}</b><div class="mut">цель ${g} · ${p}%</div></div><button class="ghost sq" data-a="k-" data-k="${k}" aria-label="Минус">−</button><span class="kn">${n}</span><button class="sq" data-a="k+" data-k="${k}" aria-label="Плюс">+</button></div><div class="bar"><i class="${p>=100?'full':''}" style="width:${p}%"></i></div></div>`}).join('');
+  const mx=Math.max(1,...TEAM.map(t=>S.log.filter(x=>x.who===t.k).length));
+  $('#team').innerHTML=TEAM.map(t=>{const n=S.log.filter(x=>x.who===t.k).length;return `<div class="card"><div class="row">${ava(t.k)}<b class="grow">${t.n}</b><span class="kn">${n}</span></div><div class="bar"><i style="width:${n/mx*100}%;background:${t.c}"></i></div></div>`}).join('');
+  const lg=[...S.log].sort((a,b)=>b.d.localeCompare(a.d));
+  $('#log').innerHTML=lg.length?lg.map(x=>`<div class="card row">${ava(x.who)}<div class="grow">${esc(x.t)}<div class="mut">${fmt(x.d)}${x.nt?' · в Notion':''}</div></div><button class="ghost sq" data-a="dellog" data-id="${esc(x.id)}" aria-label="Удалить">×</button></div>`).join(''):'<p class="mut">Пока пусто — первый выход месяца впереди.</p>';
+}
+const openH=new Set();
+function histHtml(c){const h=c.h||[];return `<details class="hist" data-id="${esc(c.id)}" ${openH.has(c.id)?'open':''}><summary>История${h.length?' · '+h.length:''}${c.lt?' · последнее касание '+fmt(c.lt):''}</summary>${h.length?[...h].reverse().map(x=>`<div class="row" style="padding:6px 0;border-top:1px solid var(--line)">${ava(x.who)}<span class="grow">${esc(x.t)}</span><span class="mut" style="white-space:nowrap">${fmt(x.d)}</span></div>`).join(''):'<p class="mut">Касаний ещё не было.</p>'}<form class="row hform" data-id="${esc(c.id)}" style="margin-top:8px"><input placeholder="Что было: звонок, встреча, ответ" aria-label="Новое касание"><button class="sq" aria-label="Добавить">+</button></form></details>`}
+async function touch(c,t){const h=[...(c.h||[]),{d:plus(0),t,who:ME}].slice(-30);await put('contacts',{...c,h,lt:plus(0),who:c.who||ME})}
+function all(){saveLocal();head();today();if(!$('#contacts').contains(document.activeElement))media();pitch();kpi();texts()}
+
+/* ---------- ИИ-ассистент ---------- */
+const chat=[];let aiBusy=false,aiCtl=null;
+const BRAND=`Prosecco Show — первый в России лейбл комедийной и музыкальной импровизации. 600+ импро-шоу, 30+ звёзд СНГ на сцене. Два направления: B2C — живые шоу; B2B — корпоративное обучение «Школа Русской Смекалки» по методике «5 золотых правил» импровизации (для HR, собственников бизнеса, руководителей). Закрытый клуб PRSCC+ с образовательными практиками; Арт Лаб — по понедельникам в 19:00. Голос бренда: тёплый, человечный, не корпоративный, через истории. Позиционирование: импровизация — навык, которому можно научиться, и культурное движение, а не просто развлечение. Правило импровизации пишется строго так: «Сделай из партнёра звезду». PR-команда: Настя (Анастасия, медиадиректор, Telegram @anast_bell), Лера и Юля (PR-менеджеры).`;
+function ctx(){
+  const tasks=S.tasks.filter(x=>!x.d).map(x=>`- ${x.t} (${tm(x.who).n}${x.due?', срок '+x.due:''}${x.pr==='hi'?', срочно':''}${x.rep?', повтор '+REPL[x.rep]:''})`).join('\n')||'нет';
+  const ev=S.events.filter(x=>dIn(x.d)>=0).sort((a,b)=>a.d.localeCompare(b.d)).map(x=>`- ${x.d}: ${x.t}`).join('\n')||'нет';
+  const cs=S.contacts.slice(0,80).map(c=>`- ${c.n}, ${c.o} (${c.ty}${c.to?', '+c.to:''}) — ${STAT[c.s]||STAT[0]}, ведёт ${tm(c.who).n}${c.lt?', последнее касание '+c.lt+(c.h&&c.h.length?' ('+c.h[c.h.length-1].t+')':''):''}`).join('\n')||'база пустая';
+  const k=Object.entries(S.kpi).filter(([x])=>KL[x]).map(([x,[n,g]])=>`${KL[x]}: ${n} из ${g}`).join('; ');
+  const lg=S.log.map(x=>`- ${x.d}: ${x.t} (${tm(x.who).n})`).join('\n')||'нет';
+  return `Ты — ИИ-ассистент PR-команды Prosecco Show внутри их рабочего приложения «Пиарщицы». Сегодня ${iso(t0)}. С тобой говорит ${tm(ME).n} (${tm(ME).r}).
+
+О бренде:
+${BRAND}
+
+Открытые задачи:
+${tasks}
+
+Ближайшие события:
+${ev}
+
+Медиабаза:
+${cs}
+
+KPI месяца: ${k}
+
+Пресс-кит:
+${kitText()}
+
+Шаблоны текстов в приложении: ${S.tpl.map(t=>t.title).join('; ')||'нет'}
+
+Журнал выходов за месяц:
+${lg}
+
+Как отвечать: по-русски, коротко и по делу, готовыми текстами, которые можно сразу скопировать. Простым текстом без markdown-разметки (без звёздочек и решёток). Тексты — в голосе бренда. Не выдумывай цифры, факты, кейсы, даты, имена людей бренда и их роли, контакты журналистов: чего нет выше, помечай как [уточнить]. Если тебя просят поставить задачу или добавить событие — используй инструменты add_task и add_event, потом коротко подтверди.`;
+}
+const TOOLS=[
+  {name:'add_task',description:'Добавить задачу в PR-приложение',inputSchema:{type:'object',properties:{text:{type:'string',description:'Текст задачи'},who:{type:'string',enum:['nastya','lera','yulia'],description:'Исполнитель: nastya — Настя, lera — Лера, yulia — Юля'},due:{type:'string',description:'Срок YYYY-MM-DD, если назван'},urgent:{type:'boolean',description:'Срочная задача'},repeat:{type:'string',enum:['d','w','m'],description:'Повтор: d — каждый день, w — каждую неделю, m — каждый месяц'}},required:['text']},
+    execute:async i=>{const due=/^\d{4}-\d{2}-\d{2}$/.test(i.due||'')?i.due:(i.repeat?plus(0):'');await put('tasks',{t:String(i.text).slice(0,300),d:false,who:TEAM.some(t=>t.k===i.who)?i.who:ME,by:ME,at:Date.now(),due,pr:i.urgent?'hi':'',rep:['d','w','m'].includes(i.repeat)?i.repeat:''});return 'задача добавлена'}},
+  {name:'add_event',description:'Добавить событие в календарь PR-приложения',inputSchema:{type:'object',properties:{title:{type:'string'},date:{type:'string',description:'Дата YYYY-MM-DD'}},required:['title','date']},
+    execute:async i=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(i.date))throw new Error('дата должна быть YYYY-MM-DD');await put('events',{t:String(i.title).slice(0,200),d:i.date});return 'событие добавлено'}}];
+function renderChat(){
+  const box=$('#chat');
+  box.innerHTML=chat.length?chat.map((m,i)=>`<div class="msg ${m.role==='user'?'u':'a'}">${esc(m.content||'Думаю…')}${m.role==='assistant'&&m.content&&!(aiBusy&&i===chat.length-1)?`<div class="acts"><button data-a="aicopy" data-i="${i}">Скопировать</button></div>`:''}</div>`).join(''):'';
+  $('#aiQuick').style.display=chat.length?'none':'flex';
+  $('#aiSend').disabled=aiBusy;$('#aiSend').textContent=aiBusy?'…':'Спросить';
+  box.lastElementChild?.scrollIntoView({block:'nearest'});
+}
+async function ask(text){
+  text=text.trim();if(!text||aiBusy)return;
+  if(!sample){toast('ИИ работает в версии приложения внутри Claude');return}
+  chat.push({role:'user',content:text});const cur={role:'assistant',content:''};chat.push(cur);
+  aiBusy=true;renderChat();aiCtl=new AbortController();
+  const conv=chat.slice(0,-1).map(m=>({role:m.role,content:m.content}));
+  conv[0]={role:'user',content:ctx()+'\n\n---\n\n'+conv[0].content};
+  try{
+    const r=await sample(conv,{onText:({text})=>{cur.content=text;renderChat()},signal:aiCtl.signal,tools:TOOLS,cache:false,modelTier:'default'});
+    cur.content=r.text||cur.content||'Пустой ответ, попробуй переформулировать.';
+  }catch(e){
+    cur.content=(e&&e.text)||(e&&e.code==='rate_limited'?'Слишком много запросов подряд — подожди минутку.':e&&e.code==='not_granted'?'Нужно разрешить приложению обращаться к Claude.':'Не получилось ответить. Попробуй ещё раз.');
+  }
+  aiBusy=false;renderChat();
+}
+const QUICK=['Что у нас горит на этой неделе?','Напиши пресс-релиз о новогоднем шоу','10 идей инфоповодов на декабрь','Кому из базы стоит написать первым?','Как ответить журналисту, который не отвечает неделю?','Распредели задачи между нами тремя'];
+$('#aiQuick').innerHTML='<button type="button" data-a="aifill" data-t="Вот запрос журналиста. Напиши ответ-комментарий от лица бренда, предложи подходящего спикера и срок:&#10;&#10;">Ответить на запрос СМИ…</button>'+QUICK.map(q=>`<button type="button" data-a="aiq">${esc(q)}</button>`).join('');
+
+/* ---------- навигация и события ---------- */
+const VIEWS=['today','media','pitch','ai','kpi'];
+function route(){
+  const v=location.hash.slice(1);const ok=VIEWS.includes(v)?v:'today';
+  document.querySelectorAll('.view').forEach(e=>e.classList.toggle('on',e.id==='v-'+ok));
+  document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.dataset.v===ok));
+  window.scrollTo(0,0);
+}
+addEventListener('hashchange',route);
+let resetArm=false;
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-a]');if(!b)return;
+  const a=b.dataset.a,id=b.dataset.id;
+  const T=S.tasks.find(x=>x.id===id),C=S.contacts.find(x=>x.id===id);
+  if(a==='me'){ME=b.dataset.k;newWho=ME;lsSet('prpult-me',ME);all();toast('Привет, '+tm(ME).n+'!')}
+  else if(a==='who'){newWho=b.dataset.k;today()}
+  else if(a==='tf'){tF=b.dataset.k;today()}
+  else if(a==='task'&&T){const done=!T.d;put('tasks',{...T,d:done,sp:T.sp||(done&&!!T.rep)});if(done&&T.rep&&!T.sp){const nx=nextDue(T.due||plus(0),T.rep);put('tasks',{t:T.t,d:false,who:T.who,by:T.by||ME,at:Date.now(),rep:T.rep,pr:T.pr||'',due:nx});toast('Готово! Следующая — '+fmt(nx))}}
+  else if(a==='deltask')del('tasks',id);
+  else if(a==='delev')del('events',id);
+  else if(a==='type'){fType=b.dataset.t;media()}
+  else if(a==='stat'&&C)put('contacts',{...C,s:((C.s||0)+1)%3});
+  else if(a==='delc')del('contacts',id);
+  else if(a==='mail'&&C)copy(C.e);
+  else if(a==='topitch'){$('#pC').value=id;pitch();location.hash='pitch'}
+  else if(a==='k+'){S.kpi[b.dataset.k][0]++;setKpi()}
+  else if(a==='k-'){S.kpi[b.dataset.k][0]=Math.max(0,S.kpi[b.dataset.k][0]-1);setKpi()}
+  else if(a==='dellog'){del('log',id);S.kpi.pub[0]=Math.max(0,S.kpi.pub[0]-1);setKpi()}
+  else if(a==='aiq')ask(b.textContent);
+  else if(a==='sub'){sub=b.dataset.s;texts()}
+  else if(a==='aibrief'){location.hash='ai';ask('Сделай мне бриф на сегодня: что горит, что сделать первым, кому написать и что именно. Коротко, по пунктам.')}
+  else if(a==='aifollow'&&C){location.hash='ai';ask(`Напиши короткое живое напоминание для ${C.n} (${C.o}). Последнее касание ${C.lt}: ${(C.h&&C.h.length?C.h[C.h.length-1].t:'питч')}. Возьми за основу шаблон «Напоминание, если молчат», подпись — ${tm(ME).n}.`)}
+  else if(a==='answered'&&C){put('contacts',{...C,wait:false,lt:plus(0),h:[...(C.h||[]),{d:plus(0),t:'Ответил',who:ME}].slice(-30)});toast('Отлично! Убрала из ожидания')}
+  else if(a==='aireport'){location.hash='ai';ask('Собери отчёт PR-команды за текущий месяц для CEO Руслана: что вышло (по журналу), KPI против цели в процентах, кто из нас что вывел, какие питчи в работе, что планируем дальше и где нужна помощь. Деловой, но тёплый тон, без воды, готов к отправке в Telegram.')}
+  else if(a==='aifill'){location.hash='ai';const i=$('#aiIn');i.value=b.dataset.t;i.focus()}
+  else if(a==='tcopy'){const t=S.tpl.find(x=>x.id===id);if(t)copy(t.body)}
+  else if(a==='tai'){const t=S.tpl.find(x=>x.id===id);if(t){location.hash='ai';ask('Адаптируй шаблон «'+t.title+'». Заполни [скобки] данными из приложения, а чего не знаешь — оставь [уточнить]. Шаблон:\n\n'+t.body)}}
+  else if(a==='tdel')del('tpl',id);
+  else if(a==='aicopy')copy(chat[+b.dataset.i].content);
+});
+$('#taskForm').addEventListener('submit',e=>{e.preventDefault();const v=$('#taskIn').value.trim();if(!v)return;const rp=$('#taskRep').value,du=$('#taskDue').value||(rp?plus(0):'');put('tasks',{t:v,d:false,who:newWho,by:ME,at:Date.now(),due:du,rep:rp,pr:$('#taskHi').checked?'hi':''});$('#taskIn').value='';$('#taskDue').value='';$('#taskRep').value='';$('#taskHi').checked=false;$('#topt').open=false;toast(newWho!==ME?'Задача ушла: '+tm(newWho).n:(rp?'Повторяющаяся задача создана':'Задача добавлена'))});
+$('#evForm').addEventListener('submit',e=>{e.preventDefault();put('events',{t:$('#evT').value.trim(),d:$('#evD').value});e.target.reset();toast('Событие добавлено')});
+$('#cForm').addEventListener('submit',e=>{e.preventDefault();const b=$('#cB').value;put('contacts',{n:$('#cN').value.trim(),o:$('#cO').value.trim(),ty:$('#cTy').value,to:$('#cTo').value.trim(),tg:$('#cTg').value.trim(),e:$('#cE').value.trim(),b:b?b.slice(5):'',s:0,who:$('#cW').value});e.target.reset();toast('Контакт в базе')});
+$('#logForm').addEventListener('submit',async e=>{e.preventDefault();const v=$('#logIn').value.trim();if(!v)return;const ent={id:nid(),t:v,d:plus(0),who:ME};$('#logIn').value='';await put('log',ent);S.kpi.pub[0]++;setKpi();toast('+1 публикация');if($('#logN').checked)pushNotion(ent)});
+$('#q').addEventListener('input',media);
+document.addEventListener('submit',e=>{const f=e.target;if(!f.matches||!f.matches('.hform'))return;e.preventDefault();const i=f.querySelector('input'),v=i.value.trim(),C=S.contacts.find(x=>x.id===f.dataset.id);if(!v||!C)return;i.value='';i.blur();touch(C,v);toast('Касание записано')});
+document.addEventListener('toggle',e=>{const d=e.target;if(d.classList&&d.classList.contains('hist')){d.open?openH.add(d.dataset.id):openH.delete(d.dataset.id)}},true);
+['#pC','#pR','#pF'].forEach(s=>$(s).addEventListener('change',pitch));
+$('#pD').addEventListener('input',pitch);
+$('#copyP').addEventListener('click',()=>copy($('#pOut').textContent));
+$('#sentP').addEventListener('click',()=>{const C=S.contacts.find(x=>x.id===$('#pC').value);if(!C){toast('Выбери адресата');return}
+  const h=[...(C.h||[]),{d:plus(0),t:'Питч: '+$('#pR').selectedOptions[0].textContent+' · '+$('#pF').selectedOptions[0].textContent,who:ME}].slice(-30);put('contacts',{...C,s:C.s||1,who:C.who||ME,h,lt:plus(0),wait:true});toast('Записала в историю. Если не ответит за 3 дня — напомню')});
+$('#aiPitch').addEventListener('click',()=>{location.hash='ai';ask('Сделай этот питч сильнее и живее, сохрани факты и подпись:\n\n'+$('#pOut').textContent)});
+$('#aiForm').addEventListener('submit',e=>{e.preventDefault();const v=$('#aiIn').value;$('#aiIn').value='';ask(v)});
+$('#aiIn').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();$('#aiForm').requestSubmit()}});
+$('#reset').addEventListener('click',async e=>{const btn=e.currentTarget;if(!resetArm){resetArm=true;btn.textContent='Точно? Тапни ещё раз';setTimeout(()=>{resetArm=false;btn.textContent='Начать новый месяц'},3000);return}
+  resetArm=false;btn.textContent='Начать новый месяц';Object.values(S.kpi).forEach(v=>v[0]=0);const ids=S.log.map(x=>x.id);setKpi();for(const id of ids)await del('log',id);toast('Новый месяц — вперёд')});
+
+/* ---------- тексты: шаблоны и пресс-кит ---------- */
+const kitText=()=>KIT_F.map(([k,l])=>l+':\n'+(S.kit[k]||'')).join('\n\n');
+let kitEditing=false;
+function texts(){
+  document.querySelectorAll('#seg button').forEach(b=>b.classList.toggle('on',b.dataset.s===sub));
+  document.querySelectorAll('.sub').forEach(e=>e.classList.toggle('on',e.id==='sub-'+sub));
+  const ts=[...S.tpl].sort((a,b)=>(a.cat||'').localeCompare(b.cat||'','ru')||a.title.localeCompare(b.title,'ru'));
+  $('#tpls').innerHTML=ts.length?ts.map(t=>`<details class="card"><summary><span class="grow">${esc(t.title)}</span><span class="tag">${esc(t.cat||'Своё')}</span></summary><pre style="background:var(--bg)">${esc(t.body)}</pre><div class="acts"><button data-a="tcopy" data-id="${esc(t.id)}">Скопировать</button><button data-a="tai" data-id="${esc(t.id)}">Адаптировать с ИИ</button><button data-a="tdel" data-id="${esc(t.id)}">Удалить</button></div></details>`).join(''):'<p class="mut">Шаблонов пока нет.</p>';
+  if(!kitEditing)$('#kitView').innerHTML=KIT_F.map(([k,l])=>`<div class="card"><b>${l}</b><div style="white-space:pre-wrap;margin-top:6px">${esc(S.kit[k]||'—')}</div></div>`).join('');
+}
+$('#kitForm').innerHTML=KIT_F.map(([k,l])=>`<label for="kit-${k}">${l}</label><textarea id="kit-${k}"></textarea>`).join('')+'<div class="row" style="margin-top:12px"><button class="grow">Сохранить</button><button type="button" class="ghost" id="kitCancel">Отмена</button></div>';
+const kitShow=on=>{kitEditing=on;$('#kitForm').hidden=!on;$('#kitView').hidden=on;$('#kitBtns').hidden=on;if(on)KIT_F.forEach(([k])=>$('#kit-'+k).value=S.kit[k]||'');texts()};
+$('#kitEdit').addEventListener('click',()=>kitShow(true));
+$('#kitCancel').addEventListener('click',()=>kitShow(false));
+$('#kitCopy').addEventListener('click',()=>copy('Пресс-кит Prosecco Show\n\n'+kitText()));
+$('#kitForm').addEventListener('submit',async e=>{e.preventDefault();const k={};KIT_F.forEach(([x])=>k[x]=$('#kit-'+x).value.trim());S.kit=k;kitShow(false);all();
+  if(MODE==='db'){try{await db.doc('meta/presskit').set(k);toast('Пресс-кит обновлён')}catch(err){toast('Не сохранилось — нет прав на запись?')}}else toast('Пресс-кит обновлён')});
+$('#tForm').addEventListener('submit',e=>{e.preventDefault();put('tpl',{title:$('#tT').value.trim(),cat:'Своё',body:$('#tB').value.trim()});e.target.reset();toast('Шаблон сохранён')});
+
+/* ---------- Notion ---------- */
+const NS='Notion',MB='collection://da3f4efa-fb62-4537-94af-fba0b652b0dd',PUB='7d417a3b-5be1-4d53-a9c6-657928f206d4';
+const nErr=e=>{const c=e&&e.code;return c==='server_not_connected'?'Подключи Notion в настройках Claude → Коннекторы.':c==='needs_reauth'?'Переподключи Notion в настройках Claude → Коннекторы.':(c==='not_in_manifest'||c==='approval_required'||c==='consent_required')?'Нужно разрешить приложению доступ к Notion — нажми ещё раз и подтверди.':c==='blocked_by_policy'?'Notion закрыт политикой организации.':c==='selection_required'?'Выбери, какой Notion использовать, в окне Claude.':c==='tool_error'?'Notion ответил ошибкой: '+String(e.message||'').slice(0,140):'Notion сейчас не отвечает — попробуй через минуту.'};
+const pay=r=>{let p=r&&r.payload;if(typeof p==='string'){try{p=JSON.parse(p)}catch(e){p={}}}return p||{}};
+const NST={'Тёплый контакт':1,'Публиковались':2};
+async function importNotion(){
+  if(!mcp){toast('Notion работает в версии приложения внутри Claude');return}
+  const b=$('#nImport');b.disabled=true;b.textContent='Загружаю из Notion…';
+  try{
+    let rows=[];
+    for(let off=0;off<1000;off+=100){
+      const r=await mcp.callTool(NS,'notion-query-data-sources',{data:{data_source_urls:[MB],query:`SELECT url, "Издание / Имя", "Тип", "Контакт", "Статус отношений", "Темы", "Заметки" FROM "${MB}" LIMIT 100 OFFSET ${off}`}},{cache:false});
+      const res=pay(r).results||[];rows=rows.concat(res);if(res.length<100)break;
+    }
+    let add=0,upd=0;
+    for(const x of rows){
+      const hex=(String(x.url||'').match(/[0-9a-f]{32}/)||[])[0];if(!hex)continue;
+      const id='n'+hex,k=String(x['Контакт']||''),em=(k.match(/[\w.+-]+@[\w-]+\.[\w.-]+/)||[''])[0];
+      const tg=(k.replace(/[\w.+-]+@[\w-]+\.[\w.-]+/g,'').match(/@[A-Za-z0-9_]{4,}/)||[''])[0];
+      let tp=[];try{tp=JSON.parse(x['Темы']||'[]')}catch(e){}
+      const old=S.contacts.find(c=>c.id===id);
+      const c={id,n:x['Издание / Имя']||'Без названия',o:k,ty:x['Тип']||'СМИ',to:Array.isArray(tp)?tp.join(', '):'',tg,e:em,note:x['Заметки']||'',src:'notion',b:old?old.b||'':'',who:old?old.who:ME,s:Math.max(old?old.s||0:0,NST[x['Статус отношений']]||0)};
+      if(old&&['n','o','ty','to','tg','e','note','s'].every(f=>(old[f]??'')===(c[f]??'')))continue;
+      await put('contacts',c);old?upd++:add++;
+    }
+    $('#nNote').textContent=`Из Notion: ${rows.length} контактов · новых ${add} · обновлено ${upd}.`;toast('Медиабаза обновлена');
+  }catch(e){$('#nNote').textContent=nErr(e)}
+  b.disabled=false;b.textContent='Обновить из Notion';
+}
+async function pushNotion(ent){
+  if(!mcp)return;
+  const url=(ent.t.match(/https?:\/\/\S+/)||[''])[0];
+  const props={'Тема питча':ent.t.replace(url,'').trim()||ent.t,'Статус':'Done','Спикер':'Бренд','date:Дата последнего касания:start':ent.d,'date:Дата последнего касания:is_datetime':0};
+  if(url)props['Ссылка на публикацию']=url;
+  try{await mcp.callTool(NS,'notion-create-pages',{parent:{type:'data_source_id',data_source_id:PUB},pages:[{properties:props}],allow_async:false},{cache:false});
+    const cur=S.log.find(x=>x.id===ent.id);if(cur)await put('log',{...cur,nt:true});toast('Записано в Notion');
+  }catch(e){toast(nErr(e))}
+}
+$('#nImport').addEventListener('click',importNotion);
+
+$('#bubbles').innerHTML=Array.from({length:14},(_,i)=>{const z=6+((i*7)%14),l=(i*37)%100,d=6+((i*5)%7),dl=-((i*1.7)%9);return `<i style="width:${z}px;height:${z}px;left:${l}%;animation-duration:${d}s;animation-delay:${dl}s"></i>`}).join('');
+try{const tg=window.Telegram&&Telegram.WebApp;if(tg&&tg.initData){tg.ready();tg.expand();try{tg.setHeaderColor('#2340e0');tg.setBackgroundColor(tg.colorScheme==='dark'?'#07081a':'#f4f6ff');tg.disableVerticalSwipes&&tg.disableVerticalSwipes()}catch(e){}document.documentElement.dataset.theme=tg.colorScheme==='dark'?'dark':'light';
+  document.addEventListener('click',e=>{const a=e.target.closest('a[href^="http"]');if(!a)return;e.preventDefault();const h=a.href;if(h.startsWith('https://t.me/'))tg.openTelegramLink(h);else tg.openLink(h)});}}catch(e){}
+all();route();renderChat();
+
+/* ---------- Telegram + n8n: общая база и ИИ ---------- */
+(async()=>{
+  const API='https://proseccoshow.app.n8n.cloud/webhook/piarshchitsy-api';
+  const TG=window.Telegram&&window.Telegram.WebApp;
+  let ctype='text/plain;charset=UTF-8';
+  async function api(body,retry){
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':ctype},body:JSON.stringify({...body,initData:TG?TG.initData:''})});
+    let j={};try{j=await r.json()}catch(e){j={ok:false,error:'bad_response'}}
+    if(j&&j.ok)return j;
+    if(j&&j.error==='no_telegram'&&TG&&TG.initData&&!retry&&ctype.startsWith('text')){ctype='application/json';return api(body,true)}
+    const e=new Error((j&&j.error)||'error');e.code=(j&&j.error)||'error';e.tgId=j&&j.tgId;throw e;
+  }
+  const gate=(title,text)=>{$('#gate').innerHTML=`<div class="gate"><h2>${title}</h2><p>${text}</p></div>`;$('#gate').hidden=false};
+  // общий интерфейс хранилища — как у базы в Claude
+  db={collection:c=>({doc:id=>({set:d=>api({action:'put',col:c,id,data:d}),delete:()=>api({action:'del',col:c,id})})}),doc:p=>{const a=p.split('/');return{set:d=>api({action:'put',col:a[0],id:a[1],data:d})}}};
+  const TOOLHINT=`\n\nВ этой версии у тебя нет инструментов add_task и add_event. Если просят поставить задачу или добавить событие, в самом конце ответа добавь по одной строке на каждое действие строго в формате:\n@@ЗАДАЧА|кому: nastya, lera или yulia|срок YYYY-MM-DD или -|срочно 1 или 0|повтор d, w, m или -|текст задачи\n@@СОБЫТИЕ|YYYY-MM-DD|название\nПриложение само выполнит эти строки и скроет их от пользователя. Подтверждать их выполнение текстом не нужно.`;
+  async function runCmds(text){
+    const done=[];const keep=[];
+    for(const line of String(text).split('\n')){
+      const m=line.trim();
+      if(m.startsWith('@@ЗАДАЧА|')){const p=m.split('|');const who=['nastya','lera','yulia'].includes((p[1]||'').trim())?p[1].trim():ME;const due=/^\d{4}-\d{2}-\d{2}$/.test((p[2]||'').trim())?p[2].trim():'';const rep=['d','w','m'].includes((p[4]||'').trim())?p[4].trim():'';const t=p.slice(5).join('|').trim();if(t){await put('tasks',{t:t.slice(0,300),d:false,who,by:ME,at:Date.now(),due:due||(rep?plus(0):''),pr:(p[3]||'').trim()==='1'?'hi':'',rep});done.push('✓ Задача → '+tm(who).n+': '+t)}}
+      else if(m.startsWith('@@СОБЫТИЕ|')){const p=m.split('|');const d=(p[1]||'').trim(),t=p.slice(2).join('|').trim();if(/^\d{4}-\d{2}-\d{2}$/.test(d)&&t){await put('events',{t:t.slice(0,200),d});done.push('✓ Событие: '+t+', '+fmt(d))}}
+      else keep.push(line);
+    }
+    return keep.join('\n').trim()+(done.length?'\n\n'+done.join('\n'):'');
+  }
+  sample=async(conv,opts)=>{
+    const first=conv[0].content,i=first.indexOf('\n\n---\n\n');
+    const system=(i>=0?first.slice(0,i):'')+TOOLHINT;
+    const msgs=[{role:'user',content:i>=0?first.slice(i+7):first},...conv.slice(1)];
+    const last=msgs[msgs.length-1].content;
+    const prompt=msgs.length>1?'Диалог до этого:\n'+msgs.slice(0,-1).map(m=>(m.role==='user'?'Пиарщица: ':'Ассистент: ')+m.content).join('\n\n')+'\n\nНовое сообщение:\n'+last:last;
+    if(opts&&opts.onText)opts.onText({text:'Думаю…'});
+    try{const j=await api({action:'ai',system,prompt});return {text:await runCmds(j.text||'')}}
+    catch(e){throw {code:e.code==='not_in_team'?'not_granted':'error',text:'Не получилось ответить. Попробуй ещё раз.'}}
+  };
+  $('#aiNote').textContent='Отвечает ИИ. Видит бренд, базу, задачи и KPI; может сам поставить задачу или событие.';
+  $('#nNote').textContent='Синхронизация с Notion — в версии приложения внутри Claude.';$('#nImport').hidden=true;$('#logNl').hidden=true;
+  if(!TG||!TG.initData){gate('Открой через бота','Приложение «Пиарщицы» работает внутри Telegram — открой его кнопкой в боте.');return}
+  MODE='db';
+  let first=true;
+  async function load(){
+    try{
+      const j=await api({action:'list'});
+      ME=j.who;newWho=newWho&&first?ME:newWho;if(first)newWho=ME;
+      const n={tasks:[],contacts:[],events:[],log:[],tpl:[]};let kpi=null,kit=null;
+      for(const d of j.docs||[]){if(n[d.col])n[d.col].push({...d.data,id:d.id});else if(d.col==='meta'&&d.id==='kpi')kpi=d.data;else if(d.col==='meta'&&d.id==='presskit')kit=d.data}
+      COLS.forEach(c=>S[c]=n[c]);
+      const k=JSON.parse(JSON.stringify(DEFK));if(kpi)for(const x in k)if(Array.isArray(kpi[x]))k[x]=[...kpi[x]];S.kpi=k;
+      S.kit={...DEF_KIT,...(kit||{})};
+      $('#sync').textContent='● Общая база';$('#gate').hidden=true;first=false;all();
+    }catch(e){
+      if(e.code==='not_in_team')gate('Почти готово',`Тебя ещё нет в команде «Пиарщиц». Твой Telegram ID: <b>${esc(e.tgId)}</b> — перешли его Насте, она добавит.`);
+      else if(e.code==='not_configured')gate('Приложение настраивается','Бэкенд ещё не подключён к боту. Загляни чуть позже.');
+      else $('#sync').textContent='Нет связи с базой';
+    }
+  }
+  await load();
+  setInterval(()=>{if(document.visibilityState==='visible'&&!aiBusy&&!document.activeElement.matches('input,textarea,select'))load()},20000);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')load()});
+})();
+
+
+}
+</script>
+</body>
+</html>
