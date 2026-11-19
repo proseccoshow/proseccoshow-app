@@ -10,13 +10,17 @@
    МЕНЯЕТЕ ТОЛЬКО ЭТОТ БЛОК
    ============================================================ */
 window.KK_DATA = {
-  colors: { bg: "#FFFFFF", surface: "#EEF4FF", accent: "#1F5BFF", text: "#0B1B3F", muted: "#5A6B8C" },
+  colors: { bg: "#F5F5F5", surface: "#FFFFFF", accent: "#4A78F5", text: "#1F1F1F", muted: "#6E6E73" },
 
   header: {
     label: "",
     titleLine1: "PRSCC+",
     titleLine2: "",
-    description: "Всё для участников в одном месте: ближайшие шоу, полезные материалы и Арт Лаб."
+    // Стиль — по презентации «Русская смекалка»: логотип, знак 1/3, подзаголовок.
+    logo: "logo-rs-dark.png",
+    mark: "mark-13.webp",
+    tagline: "Закрытая среда непрерывного развития",
+    description: "Еженедельные онлайн-практики, библиотека знаний и авторские методики Prosecco Show."
   },
 
   // Большая плашка на главной. Чтобы вернуть «ближайшее событие», удалите этот блок.
@@ -393,6 +397,114 @@ window.KK_DATA = {
 
   .foot { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
   .foot b { display: block; color: var(--text); font-weight: 600; }
+
+  /* ================= Стиль презентации «Русская смекалка» ================= */
+  @font-face { font-family: "Alumni Sans"; font-weight: 900; font-display: swap; src: url(fonts/alumni-sans-cyrillic-900-normal.woff2) format("woff2"); unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
+  @font-face { font-family: "Alumni Sans"; font-weight: 900; font-display: swap; src: url(fonts/alumni-sans-latin-900-normal.woff2) format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+  @font-face { font-family: "Inter"; font-weight: 400; font-display: swap; src: url(fonts/inter-cyrillic-400-normal.woff2) format("woff2"); unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
+  @font-face { font-family: "Inter"; font-weight: 400; font-display: swap; src: url(fonts/inter-latin-400-normal.woff2) format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122, U+2212; }
+  @font-face { font-family: "Inter"; font-weight: 500; font-display: swap; src: url(fonts/inter-cyrillic-500-normal.woff2) format("woff2"); unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
+  @font-face { font-family: "Inter"; font-weight: 500; font-display: swap; src: url(fonts/inter-latin-500-normal.woff2) format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122, U+2212; }
+  @font-face { font-family: "Inter"; font-weight: 600; font-display: swap; src: url(fonts/inter-cyrillic-600-normal.woff2) format("woff2"); unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
+  @font-face { font-family: "Inter"; font-weight: 600; font-display: swap; src: url(fonts/inter-latin-600-normal.woff2) format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122, U+2212; }
+  @font-face { font-family: "Inter"; font-weight: 700; font-display: swap; src: url(fonts/inter-cyrillic-700-normal.woff2) format("woff2"); unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
+  @font-face { font-family: "Inter"; font-weight: 700; font-display: swap; src: url(fonts/inter-latin-700-normal.woff2) format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122, U+2212; }
+
+  :root {
+    --display: "Alumni Sans", "Arial Narrow", "Roboto Condensed", sans-serif;
+    --body: "Inter", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    --dark: #1F1F1F; --soft: #EBEBED;
+    --line: rgba(31, 31, 31, 0.08);
+    --grad: linear-gradient(135deg, #3457C6 0%, #4469D6 45%, #6F8FE3 100%);
+    --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  body { font-size: 15px; letter-spacing: -.005em; }
+  .wrap { padding-top: 22px; }
+
+  /* Заголовки — узкий гротеск в нижнем регистре, как в презентации */
+  .title, .screen-title, .sec-title, .next-date, .course-title, .group-title, .dg-h, .consult h2, .home-h, .pair-name {
+    font-family: var(--display); font-weight: 900; text-transform: lowercase; letter-spacing: 0; line-height: .86; }
+  .title { font-size: clamp(76px, 25vw, 112px); margin: 18px 0 4px; }
+  .screen-title { font-size: clamp(44px, 12.5vw, 64px); margin-bottom: 18px; overflow-wrap: anywhere; hyphens: auto; }
+  .home-h { font-size: 40px; margin: 30px 0 12px; }
+  .group-title { font-size: 34px; margin: 10px 0 12px; }
+  .dg-h { font-size: 36px; }
+  .pair-name { font-size: 34px; }
+
+  /* Шапка */
+  .rs-head { position: relative; }
+  .rs-logo { display: block; height: 30px; width: auto; }
+  .rs-mark { position: absolute; right: -34px; top: -20px; width: 40%; max-width: 200px; pointer-events: none; z-index: 0; }
+  .rs-head .title, .rs-head .tagline, .rs-head .desc { position: relative; z-index: 1; }
+  .tagline { font-weight: 600; font-size: 14px; margin-bottom: 10px; }
+  .desc { color: var(--muted); font-size: 15px; }
+
+  /* Карточки: синие с зерном, чёрные, белые */
+  .next, .course, .rs-blue { background-color: #3F63D2; background-image: var(--grain), var(--grad); background-blend-mode: soft-light, normal; background-size: 160px, cover;
+    color: #FFFFFF; border-radius: 22px; }
+  .next { margin-top: 26px; padding: 22px 20px 20px; }
+  .next-date { font-size: 46px; margin: 12px 0 10px; }
+  .next-place { opacity: .9; }
+  .course-title { font-size: 40px; margin: 12px 0 10px; }
+  .btn { border-radius: 14px; font-weight: 600; padding: 15px 18px; }
+  .next .btn, .course .btn { background: #FFFFFF; color: var(--dark); }
+  .rs-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .rs-tag { display: inline-flex; align-items: center; height: 26px; padding: 0 8px; border: 1.5px solid currentColor; border-radius: 3px;
+    font-family: var(--display); font-weight: 900; font-size: 19px; line-height: 1; text-transform: lowercase; }
+  .next-kicker, .course-kicker { opacity: 1; }
+
+  .sec, .card, .lesson { background: #FFFFFF; border: 0; border-radius: 18px; }
+  .sec { padding: 18px 18px; }
+  .sec.dark, .card.dark { background: var(--dark); color: #FFFFFF; }
+  .sec.dark .sec-cap, .card.dark .card-cap { color: #A5A5A5; }
+  .sec-title { font-size: 32px; }
+  .sec-cap, .card-cap { color: var(--muted); }
+  .arrow { color: var(--accent); font-size: 24px; }
+  .sec.dark .arrow { color: #FFFFFF; }
+  .card-title { font-weight: 600; }
+
+  .ev-day { font-family: var(--display); font-size: 44px; color: var(--accent); line-height: .85; }
+  .ev-mon { text-transform: lowercase; }
+  .ev-btn, .lesson-btn { border-radius: 10px; font-weight: 600; background: var(--dark); color: #FFFFFF; }
+  .ev-soon { border-radius: 8px; background: var(--soft); color: var(--muted); }
+
+  .chip { border-radius: 10px; border-color: rgba(31,31,31,.14); font-weight: 500; }
+  .chip.on { background: var(--dark); border-color: var(--dark); color: #FFFFFF; }
+
+  .bar { background: rgba(255,255,255,.28); }
+  .lesson-num { border-radius: 10px; background: var(--dark); font-size: 26px; }
+  .lesson.done .lesson-num { background: var(--accent); color: #FFFFFF; border: 0; }
+  .lesson.done .lesson-btn { color: var(--dark); border-color: rgba(31,31,31,.2); }
+
+  .promo { background: var(--dark); border-radius: 22px; }
+  .promo-code { border-radius: 12px; border-color: rgba(255,255,255,.35); }
+  .promo-code b { font-family: var(--display); font-weight: 900; font-size: 34px; letter-spacing: .02em; }
+
+  .dg-tag { border-radius: 4px; background: transparent; color: var(--accent); border: 1.5px solid var(--accent); }
+  .dg-n { font-size: 44px; }
+  .dg-go { border-radius: 14px; }
+  .consult { background: var(--dark); color: #FFFFFF; border: 0; border-radius: 22px; }
+  .consult p { color: #A5A5A5; }
+  .consult h2 { font-size: 38px; }
+  .consult .btn { background: var(--accent); }
+
+  .pair-card { background: #FFFFFF; border: 0; border-radius: 18px; }
+  .pair-card .btn { background: var(--dark); }
+  .join { border-radius: 14px; }
+  .steps li::before { border-radius: 6px; background: var(--dark); font-family: var(--display); font-size: 20px; }
+  .steps li { border-top-color: rgba(31,31,31,.08); }
+
+  .tabs { background: rgba(255,255,255,.92); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border-top: 0; box-shadow: 0 -1px 0 rgba(31,31,31,.06); }
+  .tab { color: #9A9AA0; }
+  .tab.on { color: var(--dark); }
+  .tab.on svg { color: var(--accent); }
+  .foot { border-top-color: rgba(31,31,31,.08); }
+  .foot img { height: 26px; display: block; margin-bottom: 8px; }
+
+  .sheet { background: #F5F5F5; }
+  .bubble { background: #FFFFFF; }
+  .tip { background: #FFFFFF; border: 0; }
+  .sheet-name { color: var(--accent); }
 </style>
 </head>
 <body>
@@ -456,20 +568,26 @@ window.KK_DATA = {
   var app = document.getElementById("app");
   var activeTopic = null;
 
+  function tags(s) {
+    return '<span class="rs-tags">' + String(s).split("·").map(function (t) { return '<span class="rs-tag">' + esc(t.trim()) + "</span>"; }).join("") + "</span>";
+  }
   function arrowCard(m) {
     return link(m.url, "card", '<span class="card-body"><span class="card-title">' + esc(m.title) + '</span><span class="card-cap">' +
       esc(m.caption) + '</span></span><span class="arrow" aria-hidden="true">›</span>');
   }
 
   function renderHome() {
-    var h = '<header><div class="head-row"><div>';
+    var h = '<header class="rs-head">';
+    if (D.header.mark) h += '<img class="rs-mark" src="' + esc(D.header.mark) + '" alt="">';
+    if (D.header.logo) h += '<img class="rs-logo" src="' + esc(D.header.logo) + '" alt="Русская смекалка">';
     if (D.header.label) h += '<p class="label">' + esc(D.header.label) + "</p>";
-    h += '<h1 class="title"><span>' + esc(D.header.titleLine1) + "</span>" + (D.header.titleLine2 ? "<span>" + esc(D.header.titleLine2) + "</span>" : "") + "</h1></div>";
-    h += '</div><p class="desc">' + esc(D.header.description) + "</p></header>";
+    h += '<h1 class="title"><span>' + esc(D.header.titleLine1) + "</span>" + (D.header.titleLine2 ? "<span>" + esc(D.header.titleLine2) + "</span>" : "") + "</h1>";
+    if (D.header.tagline) h += '<p class="tagline">' + esc(D.header.tagline) + "</p>";
+    h += '<p class="desc">' + esc(D.header.description) + "</p></header>";
 
     var f = D.featured;
     if (f) {
-      h += '<section class="next"><p class="next-kicker">' + esc(f.kicker) + "</p>";
+      h += '<section class="next"><p class="next-kicker">' + tags(f.kicker) + "</p>";
       h += '<p class="next-date">' + esc(f.title) + "</p>";
       h += '<p class="next-place">' + esc(f.text) + "</p>";
       h += (f.go === "course" ? '<button class="btn" style="width:100%;border:0;font:inherit;font-weight:700;cursor:pointer" data-course="1">' + esc(f.button) + "</button>" : link(f.url, "btn", esc(f.button))) + "</section>";
@@ -489,7 +607,7 @@ window.KK_DATA = {
     var np = practiceItems()[0];
     if (np || D.pairs) h += '<h2 class="home-h">На этой неделе</h2><div class="list">';
     if (np) {
-      h += '<button class="sec" data-go="artlab"><span class="ev-date"><span class="ev-day">' + np.d.getDate() + '</span><span class="ev-mon">' + MON_SHORT[np.d.getMonth()] +
+      h += '<button class="sec dark" data-go="artlab"><span class="ev-date"><span class="ev-day">' + np.d.getDate() + '</span><span class="ev-mon">' + MON_SHORT[np.d.getMonth()] +
         '</span></span><span class="sec-body"><span class="card-title">' + esc(np.title) + '</span><span class="sec-cap">' + esc(np.cap.split("\n")[0]) +
         '</span></span><span class="arrow" aria-hidden="true">›</span></button>';
     }
@@ -501,7 +619,7 @@ window.KK_DATA = {
     if (np || D.pairs) h += "</div>";
     var G = D.diag;
     if (G) {
-      h += '<section class="next"><p class="next-kicker">' + esc(G.tag) + "</p>";
+      h += '<section class="next"><p class="next-kicker">' + tags(G.tag) + "</p>";
       h += '<p class="next-date">' + esc(G.title) + "</p>";
       h += '<p class="next-place">' + esc(G.short) + "</p>";
       h += '<button class="btn" style="width:100%;border:0;font:inherit;font-weight:700;cursor:pointer" data-go="diag">' + esc(G.more) + "</button></section>";
@@ -513,7 +631,7 @@ window.KK_DATA = {
       if (K.phone) h += '<a class="consult-phone" href="tel:' + esc(K.phone) + '">' + esc(K.phoneLabel) + "</a>";
       h += "</section>";
     }
-    h += '<footer class="foot"><b>' + esc(D.footer.name) + "</b>" + esc(D.footer.school) + "</footer>";
+    h += '<footer class="foot">' + (D.header.logo ? '<img src="' + esc(D.header.logo) + '" alt="">' : "") + "<b>" + esc(D.footer.name) + "</b>" + esc(D.footer.school) + "</footer>";
     return h;
   }
 
@@ -561,7 +679,7 @@ window.KK_DATA = {
   function renderCourse() {
     var K = D.course, total = K.lessons.length, done = 0;
     K.lessons.forEach(function (l) { if (watched[l.url]) done++; });
-    var h = '<section class="course"><p class="course-kicker">' + esc(K.kicker) + " · " + total + " уроков</p>";
+    var h = '<section class="course"><p class="course-kicker">' + tags(K.kicker + " · " + total + " уроков") + "</p>";
     h += '<p class="course-title">' + esc(K.title) + "</p>";
     h += '<p class="course-text">' + esc(K.text) + "</p>";
     h += '<div class="bar"><i style="width:' + Math.round(done / total * 100) + '%"></i></div>';
