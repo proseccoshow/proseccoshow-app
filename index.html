@@ -36,7 +36,7 @@ window.KK_DATA = {
   // Нижнее меню. tab — короткая подпись под иконкой.
   sections: {
     home:      { title: "Главная", tab: "Главная" },
-    events:    { title: "Афиша",      caption: "Развлекательные шоу", tab: "Афиша" },
+    events:    { title: "Афиша",      caption: "Шоу, Арт Лабы и онлайн-практики", tab: "Афиша" },
     materials: { title: "Материалы",  caption: "Видеокурс, методички, статьи, подкаст", tab: "Материалы" },
     artlab:    { title: "Расписание образовательных практик", caption: "Арт Лаб и онлайн-практики", tab: "Практики" },
     pairs:     { title: "Пара недели", caption: "Неделя поддержки в паре", tab: "Пара" }
@@ -87,11 +87,19 @@ window.KK_DATA = {
   },
 
   // Дата в формате ГГГГ-ММ-ДД. Прошедшие события скрываются сами.
+  // Шоу — те же, что в Афише основного приложения Prosecco Show. Арт Лабы и онлайн-практики
+  // подтягиваются в Афишу сами из блока artlab (ниже) — второй раз их вписывать не нужно.
   events: [
-    { date: "2026-10-19", time: "21:30", title: "Комики против проблем ивенторов с Адисом Маммо", guest: "", place: "Stand Up Store", button: "Купить билет", url: "" },
-    { date: "2026-10-25", time: "16:00", title: "Музыкальная импровизация Prosecco Show", guest: "", place: "Stand Up Store", button: "Купить билет", url: "" },
-    { date: "2026-10-29", time: "21:30", title: "Легендарная длинная форма импровизации Prosecco Show", guest: "", place: "Stand Up Store", button: "Купить билет", url: "" },
-    { date: "2026-11-13", time: "11:00", title: "Импровизация как навык нового времени", guest: "Николай Тисенко и Илья Шалашов", guestLabel: "Ведущие", place: "БЦ White Stone, 4-й Лесной пер., 4 · вход свободный", button: "Записаться", url: "https://lp.synergy.online/lektoriy/improvizaciya-kak-navyk-novogo-vremeni?utm_source=nativity&utm_medium=tg&utm_campaign=202611066&utm_term=Prosecco_1&marketer=cio&produkt=419398895&utm_gen=3&clckid=185b4145" }
+    { date: "2026-10-25", time: "16:00", title: "Музыкальная импровизация Prosecco Show", place: "Stand Up Store", button: "Купить билет", url: "https://standupstore.ru/events/muzykalnaya-improvizaciya-25-oktyabrya-2026-v-16-00/" },
+    { date: "2026-10-29", time: "21:30", title: "Легендарная длинная форма импровизации Prosecco Show", place: "Stand Up Store", button: "Купить билет", url: "https://standupstore.ru/events/teatralnaya-improvizaciya-29-oktyabrya-2026-v-21-30/" },
+    { date: "2026-11-03", time: "21:30", title: "Комики против проблем. Гость — Тамби Масаев", place: "Stand Up Store", button: "Купить билет", url: "https://widget.afisha.yandex.ru/w/sessions/ticketsteam-10034@77199254?clientKey=5e7cc37f-c3af-4c38-b9a4-e98524571ae8&regionId=213" },
+    { date: "2026-11-13", time: "11:00", title: "Импровизация как навык нового времени", place: "БЦ White Stone, вход свободный", button: "Записаться", url: "https://lp.synergy.online/lektoriy/improvizaciya-kak-navyk-novogo-vremeni?utm_source=nativity&utm_medium=tg&utm_campaign=202611066&utm_term=Prosecco_1&marketer=cio&produkt=419398895&utm_gen=3&clckid=185b4145" },
+    { date: "2026-11-26", time: "21:00", title: "Комики против проблем", place: "Stand Up Patriki", button: "Купить билет", url: "https://ticketscloud.com/v1/widgets/common?token=eyJhbGciOiJIUzI1NiIsImlzcyI6InRpY2tldHNjbG91ZC5ydSIsInR5cCI6IkpXVCJ9.eyJwIjoiNjhjYzE3OWUwMDU1ZTQwYTJjZDYwZDVlIn0.1a_zMZ0mvHsY-FPB4bN6hnbKILpLURWnP8yhoMV1Ez8&utm_source=anons&utm_medium=artist&utm_campaign=2611kpp&event=6abd18e6035a1921d4d53381&s=1&r=1&org=68cc179e0055e40a2cd60d5e&city=524901&category=592841f8515e35002dead938&tags=592d7f4dd35286001591bb5e%2C%D0%AE%D0%BC%D0%BE%D1%80&lang=ru" },
+    { date: "2027-01-13", time: "20:00", title: "Театральная импровизация Prosecco Show", place: "Учебная сцена Школы-студии МХАТ", button: "Купить билет", url: "https://www.afisha.ru/w/session/138038947/60fd5700-029d-45e1-be10-88d40c275500" }
+  ],
+  // Анонсы без даты — вверху Афиши с пометкой «Скоро». Убрать — удалить строку.
+  soon: [
+    { title: "Prosecco Show в Comedy Club", tag: "Скоро · ТВ", caption: "Следите за анонсом в канале" }
   ],
 
   // Видеокурс в Материалах. Просмотренные уроки отмечаются галочкой у каждого участника.
@@ -675,16 +683,26 @@ window.KK_DATA = {
   }
 
   function renderEvents() {
-    var list = upcoming();
+    var items = upcoming().map(function (e) {
+      return { d: parseDate(e.date), t: e.time || "", title: e.title, url: e.url, button: e.button || "Купить билет",
+        cap: (e.time ? e.time + ", " : "") + e.place + (e.guest ? "\n" + (e.guestLabel || "Гость") + ": " + e.guest : "") };
+    });
+    practiceItems().forEach(function (p) {
+      if (p.d - new Date() > 35 * 864e5) return;
+      items.push({ d: p.d, t: "19:00", title: p.title, url: p.url, button: p.button, cap: p.cap, online: p.online, practice: true });
+    });
+    items.sort(function (a, b) { return (a.d - b.d) || (a.t < b.t ? -1 : 1); });
     var h = screenHead("events");
-    if (!list.length) return h + '<p class="empty">Новые события скоро появятся — следите за чатом.</p>';
+    (D.soon || []).forEach(function (x) {
+      h += '<div class="card dark" style="margin-bottom:10px"><span class="card-body"><span class="rs-tag" style="margin-bottom:8px">' + esc(x.tag) + '</span><span class="card-title">' + esc(x.title) + '</span><span class="card-cap">' + esc(x.caption) + "</span></span></div>";
+    });
+    if (!items.length) return h + '<p class="empty">Новые события скоро появятся — следите за чатом.</p>';
     h += '<div class="list">';
-    list.forEach(function (e) {
-      var d = parseDate(e.date);
-      var inner =         '<span class="ev-date"><span class="ev-day">' + d.getDate() + '</span><span class="ev-mon">' + MON_SHORT[d.getMonth()] + "</span></span>" +
-        '<span class="card-body"><span class="card-title">' + esc(e.title) + '</span><span class="card-cap">' +
-        (e.time ? esc(e.time) + ", " : "") + esc(e.place) + (e.guest ? "<br>" + esc(e.guestLabel || "Гость") + ": " + esc(e.guest) : "") + "</span>" + (e.url ? "" : '<span class="ev-soon">Скоро добавим ссылку</span>') + "</span>" +
-        (e.url ? '<span class="ev-btn">' + esc(e.button) + "</span>" : "");
+    items.forEach(function (e) {
+      var inner = '<span class="ev-date' + (e.online ? " online" : "") + '"><span class="ev-day">' + e.d.getDate() + '</span><span class="ev-mon">' + MON_SHORT[e.d.getMonth()] + "</span></span>" +
+        '<span class="card-body"><span class="card-title">' + esc(e.title) + '</span><span class="card-cap">' + esc(e.cap).replace(/\n/g, "<br>") + "</span>" +
+        (e.url || e.practice ? "" : '<span class="ev-soon">Скоро добавим ссылку</span>') + "</span>" +
+        (e.url && e.button ? '<span class="ev-btn">' + esc(e.button) + "</span>" : "");
       h += e.url ? link(e.url, "card", inner) : '<div class="card">' + inner + "</div>";
     });
     return h + "</div>";
