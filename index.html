@@ -271,7 +271,29 @@ window.KK_DATA = {
     box-shadow: 0 6px 18px rgba(11,27,63,.18); cursor: pointer; -webkit-tap-highlight-color: transparent; }
   .coon-fab img, .coon-fab svg { width: 100%; height: 100%; object-fit: contain; display: block; }
   .coon-fab:active { transform: scale(.94); }
-  .coon-fab.wave img, .coon-fab.wave svg { animation: hop 1.2s ease-in-out 2; }
+  .coon-fab { overflow: hidden; padding: 6px 4px 0; }
+  .coon-fab svg { animation: hop 1.2s ease-in-out 2; }
+
+  /* Живой енот: дышит, покачивается, моргает, подпрыгивает */
+  .coon-live { position: relative; display: block; width: 100%; height: 100%; }
+  .coon-body { position: absolute; inset: 0; transform-origin: 50% 100%; animation: breathe 3.2s ease-in-out infinite; }
+  .coon-live img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .coon-live .lid { position: absolute; top: var(--ey); width: 13%; height: var(--eh); margin: calc(var(--eh) / -2) 0 0 -6.5%; border-radius: 50%;
+    background: radial-gradient(ellipse at 50% 40%, #3a2c37 0%, #2f2530 60%, rgba(47,37,48,.85) 75%, rgba(47,37,48,0) 100%); transform: scaleY(0); transform-origin: 50% 0; transition: transform .08s ease-in; }
+  .coon-live .lid.l { left: 32.1%; } .coon-live .lid.r { left: 63.6%; }
+  .coon-live { --ey: 30.2%; --eh: 9.4%; }
+  .coon-live.is-head { --ey: 54.9%; --eh: 17.1%; }
+  .coon-live.blink .lid { transform: scaleY(1); }
+  .coon-live .lid::after { content: ""; position: absolute; left: 22%; right: 22%; top: 46%; height: 26%; border-bottom: 2px solid #120d13; border-radius: 0 0 50% 50%; opacity: .85; }
+  .is-head .lid::after { border-bottom-width: 1.5px; }
+  .is-head .coon-body { animation: tilt 7s ease-in-out infinite; transform-origin: 50% 90%; }
+  .coon-live.jump { animation: jump .7s cubic-bezier(.3,1.6,.5,1); }
+  .sheet-coon .coon-body { animation: breathe 3.2s ease-in-out infinite, sway 5s ease-in-out infinite; }
+  @keyframes breathe { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.012, 1.03); } }
+  @keyframes sway { 0%, 100% { rotate: 0deg; } 30% { rotate: -2.5deg; } 70% { rotate: 2.5deg; } }
+  @keyframes tilt { 0%, 70%, 100% { transform: rotate(0); } 76% { transform: rotate(-9deg); } 86% { transform: rotate(-9deg); } 92% { transform: rotate(2deg); } }
+  @keyframes jump { 0% { transform: translateY(0) scale(1, 1); } 20% { transform: translateY(0) scale(1.08, .9); } 50% { transform: translateY(-18%) scale(.96, 1.06); }
+    80% { transform: translateY(0) scale(1.05, .95); } 100% { transform: translateY(0) scale(1, 1); } }
   .head-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
   .coon-btn { flex: 0 0 auto; width: 56px; height: 56px; border-radius: 18px; border: 1px solid var(--line); background: var(--surface); padding: 6px; cursor: pointer; }
   .coon-btn img, .coon-btn svg { width: 100%; height: 100%; object-fit: contain; display: block; }
@@ -280,7 +302,7 @@ window.KK_DATA = {
   .sheet { width: 100%; max-width: 560px; background: var(--bg); border-radius: 28px 28px 0 0; padding: 22px 22px calc(22px + env(safe-area-inset-bottom, 0px));
     max-height: 92vh; overflow-y: auto; animation: up .28s cubic-bezier(.2,.9,.3,1.2); }
   .sheet-coon { width: 120px; height: 150px; margin: -4px auto 6px; }
-  .sheet-coon img, .sheet-coon svg { width: 100%; height: 100%; object-fit: contain; display: block; animation: hop 2.4s ease-in-out infinite; }
+  .sheet-coon svg { width: 100%; height: 100%; display: block; animation: hop 2.4s ease-in-out infinite; }
   .sheet-name { text-align: center; font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
   .bubble { margin: 10px 0 16px; padding: 14px 16px; border-radius: 18px; background: var(--surface); font-size: 15px; }
   .tip { width: 100%; display: flex; align-items: center; gap: 12px; margin-bottom: 8px; padding: 14px 16px; border-radius: 16px; border: 1px solid var(--line);
@@ -293,7 +315,7 @@ window.KK_DATA = {
   @keyframes fade { from { opacity: 0; } }
   @keyframes up { from { transform: translateY(100%); } }
   @keyframes hop { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-5px) rotate(-3deg); } }
-  @media (prefers-reduced-motion: reduce) { .sheet, .sheet-bg, .sheet-coon svg, .sheet-coon img { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { .sheet, .sheet-bg, .sheet-coon svg, .coon-body, .coon-live, .coon-fab svg { animation: none !important; } }
 
   .tease { display: flex; align-items: center; gap: 14px; margin-top: 10px; }
   .home-h { font-family: var(--display); font-size: 18px; font-weight: 800; margin: 28px 0 10px; }
@@ -594,7 +616,22 @@ window.KK_DATA = {
     '<circle cx="30" cy="80" r="5" fill="#1F5BFF" opacity=".18"/><circle cx="90" cy="80" r="5" fill="#1F5BFF" opacity=".18"/></svg>';
   function coonImg(head) {
     var src = D.mascot && (head ? D.mascot.head || D.mascot.image : D.mascot.image);
-    return src ? '<img src="' + esc(src) + '" alt="">' : COON_SVG;
+    if (!src) return COON_SVG;
+    return '<span class="coon-live' + (head ? " is-head" : "") + '"><span class="coon-body"><img src="' + esc(src) + '" alt="">' +
+      '<i class="lid l"></i><i class="lid r"></i></span></span>';
+  }
+  // Моргание: раз в 2–6 секунд, иногда дважды подряд
+  (function blinkLoop() {
+    setTimeout(function () {
+      var els = document.querySelectorAll(".coon-live");
+      function blink() { for (var i = 0; i < els.length; i++) els[i].classList.add("blink"); setTimeout(function () { for (var i = 0; i < els.length; i++) els[i].classList.remove("blink"); }, 170); }
+      blink(); if (Math.random() < 0.25) setTimeout(blink, 300);
+      blinkLoop();
+    }, 2000 + Math.random() * 4000);
+  })();
+  function coonJump(el) {
+    var c = el && el.querySelector(".coon-live"); if (!c) return;
+    c.classList.remove("jump"); void c.offsetWidth; c.classList.add("jump");
   }
   var COON_KEY = "prscc_coon_seen";
   function coonSuggestion() {
@@ -616,6 +653,7 @@ window.KK_DATA = {
     h += '<button class="btn dg-go" data-coon-go="' + esc(sg.go) + '">' + esc(sg.button) + '</button><button class="sheet-later" data-coon-close>' + esc(M.later) + "</button></div>";
     var bg = document.createElement("div"); bg.className = "sheet-bg"; bg.innerHTML = h;
     document.body.appendChild(bg);
+    setTimeout(function () { coonJump(bg.querySelector(".sheet-coon")); }, 250);
     track("mascot_open", { target: auto ? "auto" : "button" });
     function close() { if (bg.parentNode) bg.parentNode.removeChild(bg); }
     bg.addEventListener("click", function (e) { if (e.target === bg) { close(); track("mascot_close"); } });
@@ -716,9 +754,10 @@ window.KK_DATA = {
     var fab = document.createElement("button");
     fab.className = "coon-fab"; fab.setAttribute("aria-label", D.mascot.name);
     fab.innerHTML = coonImg(true);
-    fab.addEventListener("click", function () { openCoon(false); });
+    fab.addEventListener("click", function () { coonJump(fab); setTimeout(function () { openCoon(false); }, 250); });
     document.body.appendChild(fab);
-    setTimeout(function () { fab.className += " wave"; }, 1500);
+    setTimeout(function () { coonJump(fab); }, 1500);
+    setInterval(function () { if (!document.querySelector(".sheet-bg")) coonJump(fab); }, 25000);
   }
   tabsEl.addEventListener("click", function (e) {
     var b = e.target.closest ? e.target.closest("[data-tab]") : null;
