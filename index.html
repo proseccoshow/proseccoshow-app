@@ -149,6 +149,18 @@ window.KK_DATA = {
     }
   },
 
+  // Команда тренеров — на главной (лентой) и в «Практиках» (списком).
+  // photo — ссылка на фото (квадратное); пусто — инициалы. text можно оставить пустым.
+  coaches: {
+    title: "Команда тренеров",
+    items: [
+      { name: "Илья Шалашов", role: "Сооснователь Prosecco Show, актёр, методолог", photo: "coach-ilya.webp",
+        text: "Преподаёт импровизацию в МХТ им. Чехова и Школе-студии МХАТ, эксперт Школы управления «Сколково». Соавтор методологии «5 золотых правил импровизации»." },
+      { name: "Аня Шалашова", role: "Тренер онлайн-практик", photo: "", text: "" },
+      { name: "Петя Огурцов", role: "Тренер, автор мастер-классов на Арт Лабе", photo: "", text: "" }
+    ]
+  },
+
   // Лидмагнит: диагностическая сессия. Блок на главной + отдельный экран.
   // Убрать — удалите этот блок. url — куда ведёт кнопка «Записаться» (текст сообщения подставится сам).
   diag: {
@@ -512,6 +524,19 @@ window.KK_DATA = {
   .bubble { background: #FFFFFF; }
   .tip { background: #FFFFFF; border: 0; }
   .sheet-name { color: var(--accent); }
+
+  /* Команда тренеров */
+  .co-row { display: flex; gap: 10px; overflow-x: auto; margin: 0 -22px; padding: 0 22px 4px; scroll-snap-type: x mandatory; scroll-padding-inline: 22px; -webkit-overflow-scrolling: touch; }
+  .co-row::-webkit-scrollbar { display: none; }
+  .co-row .co-card { flex: 0 0 74%; scroll-snap-align: start; }
+  .co-card { background: var(--dark); color: #FFFFFF; border-radius: 18px; padding: 16px; }
+  .co-top { display: flex; gap: 12px; align-items: center; }
+  .co-ava { flex: 0 0 64px; width: 64px; height: 64px; border-radius: 14px; overflow: hidden; display: flex; align-items: center; justify-content: center;
+    font-family: var(--display); font-weight: 900; font-size: 32px; text-transform: lowercase; }
+  .co-ava img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .co-name { font-family: var(--display); font-weight: 900; font-size: 30px; line-height: .9; text-transform: lowercase; }
+  .co-role { font-size: 13px; color: #A5A5A5; margin-top: 4px; line-height: 1.35; }
+  .co-text { font-size: 14px; color: #D6D6D6; margin-top: 12px; line-height: 1.45; }
 </style>
 </head>
 <body>
@@ -624,6 +649,7 @@ window.KK_DATA = {
         esc(today ? "Сегодня запись — нажмите «" + D.pairs.button + "»" : D.sections.pairs.caption) + '</span></span><span class="arrow" aria-hidden="true">›</span></button>';
     }
     if (np || D.pairs) h += "</div>";
+    h += renderCoaches("row");
     var G = D.diag;
     if (G) {
       h += '<section class="next"><p class="next-kicker">' + tags(G.tag) + "</p>";
@@ -1027,6 +1053,21 @@ window.KK_DATA = {
     try { if (tg && tg.CloudStorage && tg.isVersionAtLeast && tg.isVersionAtLeast("6.9")) tg.CloudStorage.setItem(COON_KEY, "1"); } catch (e) {}
   }
 
+  function coachAva(c) {
+    if (c.photo) return '<span class="co-ava"><img src="' + esc(c.photo) + '" alt=""></span>';
+    var ini = String(c.name).split(" ").map(function (w) { return w.charAt(0); }).join("").slice(0, 2);
+    return '<span class="co-ava rs-blue">' + esc(ini) + "</span>";
+  }
+  function renderCoaches(mode) {
+    var C = D.coaches; if (!C || !C.items.length) return "";
+    var h = '<h2 class="home-h">' + esc(C.title) + '</h2><div class="' + (mode === "row" ? "co-row" : "list") + '">';
+    C.items.forEach(function (c) {
+      h += '<div class="co-card"><div class="co-top">' + coachAva(c) + '<div><p class="co-name">' + esc(c.name) + '</p><p class="co-role">' + esc(c.role) + "</p></div></div>" +
+        (c.text && mode !== "row" ? '<p class="co-text">' + esc(c.text) + "</p>" : "") + "</div>";
+    });
+    return h + "</div>";
+  }
+
   function renderArtlab() {
     var A = D.artlab;
     var h = screenHead("artlab") + '<p class="intro">' + esc(A.intro) + "</p>";
@@ -1043,7 +1084,7 @@ window.KK_DATA = {
         (it.button ? '<span class="ev-btn">' + esc(it.button) + "</span>" : "");
       h += it.url ? link(it.url, "card", inner) : '<div class="card">' + inner + "</div>";
     });
-    return h + "</div>";
+    return h + "</div>" + renderCoaches("list");
   }
 
   var diagFor = "team";
