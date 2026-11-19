@@ -318,12 +318,12 @@ const iso=d=>new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice
 const t0=new Date();t0.setHours(0,0,0,0);
 const plus=n=>{const d=new Date(t0);d.setDate(d.getDate()+n);return iso(d)};
 const DEFK={pub:[0,10],tv:[0,2],collab:[0,3],leads:[0,15],guests:[0,4]};
-const COLS=['tasks','contacts','events','log','tpl'];
+const COLS=['tasks','contacts','events','log','tpl','people'];
 let ME=lsGet('prpult-me')||'nastya';
 let MODE='local',db=null,sample=null,mcp=null,sub='pitch';
 let S=null;try{S=JSON.parse(lsGet(LKEY))}catch(e){}
 if(!S||!S.kpi){const k=(8-t0.getDay())%7||7;S={tasks:[{id:'t1',t:'Отправить анонс новогоднего шоу в городские медиа',d:false,who:'nastya',at:Date.now()}],contacts:[],events:[{id:'e1',t:'Арт Лаб, 19:00',d:plus(k)}],log:[],kpi:JSON.parse(JSON.stringify(DEFK))}}
-if(!S.tpl)S.tpl=DEF_TPL.map((x,i)=>({...x,id:'tpl'+i}));if(!S.kit)S.kit={...DEF_KIT};
+if(!S.people)S.people=[];if(!S.tpl)S.tpl=DEF_TPL.map((x,i)=>({...x,id:'tpl'+i}));if(!S.kit)S.kit={...DEF_KIT};
 const saveLocal=()=>{if(MODE==='local')lsSet(LKEY,JSON.stringify(S))};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -366,10 +366,10 @@ function trank(x){if(x.d)return 9;if(x.due&&dIn(x.due)<0)return 0;if(x.pr==='hi'
 function tmeta(x){const t=[];if(x.due&&!x.d){const n=dIn(x.due);t.push(n<0?`<span class="tag late">просрочено ${-n} ${pl(-n,'день','дня','дней')}</span>`:n===0?'<span class="tag now">сегодня</span>':n===1?'<span class="tag">завтра</span>':`<span class="tag">до ${fmt(x.due)}</span>`)}if(x.rep)t.push(`<span class="tag">↻ ${REPL[x.rep]}</span>`);return t.length?`<span class="tm">${t.join('')}</span>`:''}
 function waiting(){return S.contacts.filter(c=>c.wait&&c.lt&&dIn(c.lt)<=-3).map(c=>({...c,ago:-dIn(c.lt)})).sort((a,b)=>b.ago-a.ago)}
 function brief(){
-  const mine=S.tasks.filter(x=>!x.d&&x.who===ME),my=mine.length,od=mine.filter(x=>x.due&&dIn(x.due)<0).length,td=mine.filter(x=>x.due&&dIn(x.due)===0).length,ev=S.events.filter(x=>{const n=dIn(x.d);return n>=0&&n<=1}),w=waiting(),bd=S.contacts.filter(c=>bIn(c.b)<=3);
+  const mine=S.tasks.filter(x=>!x.d&&x.who===ME),my=mine.length,od=mine.filter(x=>x.due&&dIn(x.due)<0).length,td=mine.filter(x=>x.due&&dIn(x.due)===0).length,ev=S.events.filter(x=>{const n=dIn(x.d);return n>=0&&n<=1}),w=waiting(),bd=[...S.contacts,...(S.people||[])].filter(c=>bIn(c.b)<=3);
   const L=[...(od?[[od,'просрочено — начни с них']]:[]),[my,pl(my,'задача','задачи','задач')+' на тебе'+(td?', на сегодня — '+td:'')],[ev.length,ev.length?'сегодня-завтра: '+ev.map(x=>x.t).join(', '):'событий сегодня-завтра'],[w.length,pl(w.length,'контакт ждёт','контакта ждут','контактов ждут')+' напоминания'],[bd.length,pl(bd.length,'день рождения','дня рождения','дней рождения')+' в ближайшие 3 дня']];
   $('#brief').innerHTML=`<div class="card brief"><b>Бриф на сегодня, ${tm(ME).n}</b>${L.map(([n,t])=>`<div class="row" style="margin-top:8px"><span class="kn" style="width:34px;font-size:18px">${n}</span><span class="grow">${esc(t)}</span></div>`).join('')}<div class="acts"><button data-a="aibrief">Разобрать с ИИ: что делать первым</button></div></div>`;
-  $('#wait').innerHTML=w.length?w.map(c=>`<div class="card"><div class="row">${ava(c.who)}<b class="grow">${esc(c.n)}</b><span class="tag ${c.ago>=7?'hot':''}">${c.ago} ${pl(c.ago,'день','дня','дней')}</span></div><div class="mut">${esc((c.h&&c.h.length?c.h[c.h.length-1].t:'питч'))}</div><div class="acts"><button data-a="aifollow" data-id="${esc(c.id)}">Напоминание с ИИ</button>${c.tg?`<a href="https://t.me/${esc(c.tg.replace('@',''))}">Telegram</a>`:''}<button data-a="answered" data-id="${esc(c.id)}">Ответил</button></div></div>`).join(''):'<p class="mut">Никто не завис — все питчи в движении.</p>';
+  $('#wait').innerHTML=w.length?w.map(c=>`<div class="card"><div class="row">${ava(c.who)}<b class="grow">${esc(c.n)}${c.prio&&String(c.prio)[0]==='1'?' <span class="tag">★ приоритет</span>':''}</b><span class="tag ${c.ago>=7?'hot':''}">${c.ago} ${pl(c.ago,'день','дня','дней')}</span></div><div class="mut">${esc((c.h&&c.h.length?c.h[c.h.length-1].t:'питч'))}</div><div class="acts"><button data-a="aifollow" data-id="${esc(c.id)}">Напоминание с ИИ</button>${c.tg?`<a href="https://t.me/${esc(c.tg.replace('@',''))}">Telegram</a>`:''}<button data-a="answered" data-id="${esc(c.id)}">Ответил</button></div></div>`).join(''):'<p class="mut">Никто не завис — все питчи в движении.</p>';
 }
 function today(){
   brief();
@@ -380,15 +380,15 @@ function today(){
   $('#tasks').innerHTML=list.length?list.map(x=>`<div class="card row"><button class="chk ${x.d?'done':''}" data-a="task" data-id="${esc(x.id)}" aria-label="Готово"></button><span class="grow"><span class="${x.d?'done-t':''}">${x.pr==='hi'&&!x.d?'<b class="flag">Срочно</b> ':''}${esc(x.t)}</span>${tmeta(x)}</span>${ava(x.who)}<button class="ghost sq" data-a="deltask" data-id="${esc(x.id)}" aria-label="Удалить">×</button></div>`).join(''):'<p class="mut">Задач нет — красота.</p>';
   const ev=S.events.map(x=>({...x,n:dIn(x.d)})).filter(x=>x.n>=0).sort((a,b)=>a.n-b.n);
   $('#events').innerHTML=ev.length?ev.map(x=>`<div class="card row"><div class="days">${x.n}<small>${pl(x.n,'день','дня','дней')}</small></div><div class="grow"><b>${esc(x.t)}</b><div class="mut">${fmt(x.d)}</div></div><button class="ghost sq" data-a="delev" data-id="${esc(x.id)}" aria-label="Удалить">×</button></div>`).join(''):'<p class="mut">Ничего не запланировано.</p>';
-  const bd=S.contacts.map(c=>({...c,n2:bIn(c.b)})).filter(c=>c.n2<=14).sort((a,b)=>a.n2-b.n2);
-  $('#bdays').innerHTML=bd.length?bd.map(c=>`<div class="card"><div class="row"><b class="grow">${esc(c.n)}</b><span class="tag ${c.n2<=2?'hot':''}">${when(c.n2)}</span></div><div class="mut">${esc(c.o)} · ведёт ${tm(c.who).n}</div>${c.tg?`<div class="acts"><a href="https://t.me/${esc(c.tg.replace('@',''))}">Поздравить в Telegram</a></div>`:''}</div>`).join(''):'<p class="mut">В ближайшие две недели никого.</p>';
+  const bd=[...S.contacts,...(S.people||[]).map(p=>({id:p.id,n:p.n,o:[p.cat,p.note].filter(Boolean).join(' · '),b:p.b,who:'',tg:''}))].map(c=>({...c,n2:bIn(c.b)})).filter(c=>c.n2<=14).sort((a,b)=>a.n2-b.n2);
+  $('#bdays').innerHTML=bd.length?bd.map(c=>`<div class="card"><div class="row"><b class="grow">${esc(c.n)}</b><span class="tag ${c.n2<=2?'hot':''}">${when(c.n2)}</span></div><div class="mut">${esc(c.o)}${c.who?' · ведёт '+tm(c.who).n:''}</div>${c.tg?`<div class="acts"><a href="https://t.me/${esc(c.tg.replace('@',''))}">Поздравить в Telegram</a></div>`:''}</div>`).join(''):'<p class="mut">В ближайшие две недели никого.</p>';
 }
 function media(){
   $('#types').innerHTML=['Все','Мои',...new Set(S.contacts.map(c=>c.ty).filter(Boolean))].map(t=>`<button type="button" class="${t===fType?'on':''}" data-a="type" data-t="${t}">${t}</button>`).join('');
   $('#cW').innerHTML=TEAM.map(t=>`<option value="${t.k}" ${t.k===ME?'selected':''}>${t.n}</option>`).join('');
   const q=$('#q').value.trim().toLowerCase();
   const list=S.contacts.filter(c=>(fType==='Все'||(fType==='Мои'?c.who===ME:c.ty===fType))&&(!q||(c.n+' '+c.o+' '+c.to).toLowerCase().includes(q))).sort((a,b)=>a.n.localeCompare(b.n,'ru'));
-  $('#contacts').innerHTML=list.length?list.map(c=>`<div class="card"><div class="row">${ava(c.who)}<b class="grow">${esc(c.n)}</b><button class="tag ${c.s===2?'hot':''}" style="min-height:32px;color:inherit;font-weight:600" data-a="stat" data-id="${esc(c.id)}">${STAT[c.s]||STAT[0]}</button></div>
+  $('#contacts').innerHTML=list.length?list.map(c=>`<div class="card"><div class="row">${ava(c.who)}<b class="grow">${esc(c.n)}${c.prio&&String(c.prio)[0]==='1'?' <span class="tag">★ приоритет</span>':''}</b><button class="tag ${c.s===2?'hot':''}" style="min-height:32px;color:inherit;font-weight:600" data-a="stat" data-id="${esc(c.id)}">${STAT[c.s]||STAT[0]}</button></div>
     <div class="mut">${esc(c.ty)} · ${esc(c.o)}${c.to?' · '+esc(c.to):''}</div>${c.note?`<div class="mut" style="margin-top:4px">${esc(c.note)}</div>`:''}
     <div class="acts">${c.tg?`<a href="https://t.me/${esc(c.tg.replace('@',''))}">Telegram</a>`:''}${c.e?`<button data-a="mail" data-id="${esc(c.id)}">${esc(c.e)}</button>`:''}<button data-a="topitch" data-id="${esc(c.id)}">Написать питч</button><button data-a="delc" data-id="${esc(c.id)}">Удалить</button></div>${histHtml(c)}</div>`).join(''):`<p class="mut">${S.contacts.length?'Никого не нашлось.':'База пока пустая — добавь первый контакт ниже.'}</p>`;
 }
@@ -654,7 +654,7 @@ all();route();renderChat();
     catch(e){throw {code:e.code==='not_in_team'?'not_granted':'error',text:'Не получилось ответить. Попробуй ещё раз.'}}
   };
   $('#aiNote').textContent='Отвечает ИИ. Видит бренд, базу, задачи и KPI; может сам поставить задачу или событие.';
-  $('#nNote').textContent='Синхронизация с Notion — в версии приложения внутри Claude.';$('#nImport').hidden=true;$('#logNl').hidden=true;
+  $('#nNote').textContent='Медиабаза, публикации, события и дни рождения подтягиваются из Notion каждый час.';$('#nImport').hidden=true;$('#logNl').hidden=true;
   if(!TG||!TG.initData){gate('Открой через бота','Приложение «Пиарщицы» работает внутри Telegram — открой его кнопкой в боте.');return}
   MODE='db';
   let first=true;
@@ -662,7 +662,7 @@ all();route();renderChat();
     try{
       const j=await api({action:'list'});
       ME=j.who;newWho=newWho&&first?ME:newWho;if(first)newWho=ME;
-      const n={tasks:[],contacts:[],events:[],log:[],tpl:[]};let kpi=null,kit=null;
+      const n={tasks:[],contacts:[],events:[],log:[],tpl:[],people:[]};let kpi=null,kit=null;
       for(const d of j.docs||[]){if(n[d.col])n[d.col].push({...d.data,id:d.id});else if(d.col==='meta'&&d.id==='kpi')kpi=d.data;else if(d.col==='meta'&&d.id==='presskit')kit=d.data}
       COLS.forEach(c=>S[c]=n[c]);
       const k=JSON.parse(JSON.stringify(DEFK));if(kpi)for(const x in k)if(Array.isArray(kpi[x]))k[x]=[...kpi[x]];S.kpi=k;
