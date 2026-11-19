@@ -55,14 +55,14 @@ window.KK_DATA = {
   // Маскот. Поп-ап показывается при первом входе, потом — по кнопке с енотом на главной.
   // image — енот целиком (в поп-апе), head — голова (кнопка в углу каждого экрана). Пусто — нарисованный енот.
   mascot: {
-    name: "Енот Илья",
+    name: "Енот Прошка",
     image: "coon.png",
     head: "coon-head.png",
-    // Части куклы (из ролика): Илья бегает по экрану, машет, болтает, хихикает и меняет образ — усы, парик.
+    // Части куклы (из ролика): Прошка бегает по экрану, машет, болтает, хихикает и меняет образ — усы, парик.
     parts: { body: "ilya-body.webp", head: "ilya-head.webp", arm: "ilya-arm.webp", moustache: "ilya-moustache.webp", wig: "ilya-wig.webp" },
-    // Реплики Ильи: что он говорит на каждом экране. Можно дописывать и менять.
+    // Реплики Прошки: что он говорит на каждом экране. Можно дописывать и менять.
     phrases: {
-      hello: "Привет! Я Илья 👋",
+      hello: "Привет! Я Прошка 👋",
       home: ["Тапни на меня — подскажу, что делать", "Загляни в Материалы — там курс!", "Я тут присматриваю 👀"],
       events: ["Пойдём на шоу? Я возьму попкорн 🍿", "Импровизация вживую — это огонь!"],
       materials: ["Один урок в день — и ты звезда импровизации", "«Да, и…» — моё любимое правило!", "Ошибки — это подарки. Проверено енотом"],
@@ -73,7 +73,7 @@ window.KK_DATA = {
       wig: ["А теперь — причёска!", "Кудри — мой новый вайб"],
       outfit: ["Как я вам?", "Новый образ!", "Ну красавчик же", "Сделай из партнёра звезду — вот я и стараюсь"]
     },
-    hello: "Привет! Я Енот Илья — самый любопытный житель PRSCC+. Покажу, что здесь есть.",
+    hello: "Привет! Я Енот Прошка — самый любопытный житель PRSCC+. Покажу, что здесь есть.",
     tips: [
       { go: "materials", title: "Материалы", text: "Видеокурс «5 золотых правил», методички и подкаст" },
       { go: "artlab",    title: "Практики",  text: "Арт Лаб по понедельникам и промокод на скидку 50%" },
@@ -281,7 +281,7 @@ window.KK_DATA = {
   .tab.on { color: var(--accent); }
   .tab span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 
-  /* ===== Енот Илья: кукла из частей фото ===== */
+  /* ===== Енот Прошка: кукла из частей фото ===== */
   .ilya { position: relative; width: 100%; aspect-ratio: 300 / 401; }
   .ilya-in { position: absolute; inset: 0; transform-origin: 50% 100%; animation: breathe 3.2s ease-in-out infinite; }
   .ilya img { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block; pointer-events: none; -webkit-user-drag: none; user-select: none; }
@@ -329,7 +329,7 @@ window.KK_DATA = {
   @keyframes sway { 0%, 100% { rotate: 0deg; } 30% { rotate: -2.5deg; } 70% { rotate: 2.5deg; } }
   .sheet-coon .ilya-in { animation: breathe 3.2s ease-in-out infinite, sway 5s ease-in-out infinite; }
 
-  /* Сцена: Илья гуляет над нижним меню */
+  /* Сцена: Прошка гуляет над нижним меню */
   .ilya-stage { position: fixed; left: 0; right: 0; z-index: 21; bottom: calc(66px + env(safe-area-inset-bottom, 0px)); height: 0; pointer-events: none; }
   .ilya-walker { position: absolute; left: 0; bottom: 0; width: 78px; pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent;
     transition-property: transform; transition-timing-function: linear; will-change: transform; }
@@ -662,7 +662,7 @@ window.KK_DATA = {
   }
   function plural(n, a, b, c) { var m = n % 10, mm = n % 100; return m === 1 && mm !== 11 ? a : (m >= 2 && m <= 4 && (mm < 10 || mm >= 20) ? b : c); }
 
-  // ---------- Енот Илья ----------
+  // ---------- Енот Прошка ----------
   var COON_SVG = '<svg viewBox="0 0 120 120" aria-hidden="true"><g fill="#8C95A8"><path d="M22 40 L30 10 L52 30 Z"/><path d="M98 40 L90 10 L68 30 Z"/></g>' +
     '<g fill="#3A4256"><path d="M29 34 L33 19 L44 30 Z"/><path d="M91 34 L87 19 L76 30 Z"/></g>' +
     '<ellipse cx="60" cy="66" rx="46" ry="40" fill="#A7B0C2"/>' +
@@ -675,7 +675,7 @@ window.KK_DATA = {
     '<ellipse cx="60" cy="79" rx="6.5" ry="4.5" fill="#0B1B3F"/>' +
     '<path d="M52 89 Q60 96 68 89" stroke="#0B1B3F" stroke-width="2.6" fill="none" stroke-linecap="round"/>' +
     '<circle cx="30" cy="80" r="5" fill="#1F5BFF" opacity=".18"/><circle cx="90" cy="80" r="5" fill="#1F5BFF" opacity=".18"/></svg>';
-  // ================= Енот Илья: кукла + прогулки по экрану =================
+  // ================= Енот Прошка: кукла + прогулки по экрану =================
   var OUTFITS = ["", "o-mou", "o-wig", "o-mou o-wig"];
   var OUTFIT_KEY = "prscc_ilya_outfit";
   var ilyaOutfit = "";
