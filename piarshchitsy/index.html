@@ -119,6 +119,20 @@ details.card[open]>summary::after{transform:rotate(45deg)}
 .tt{cursor:pointer}.tt:active{opacity:.7}
 .ovl[hidden]{display:none}.ovl{position:fixed;inset:0;z-index:15;background:rgba(7,8,26,.55);display:flex;align-items:flex-end;justify-content:center}
 .sheet{background:var(--bg);width:100%;max-width:640px;border-radius:26px 26px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));max-height:92vh;overflow:auto;animation:fade .2s ease}
+.cal{padding:14px 12px}.calh{display:flex;align-items:center;gap:8px;margin-bottom:8px}.calh b{flex:1;text-align:center;font-family:Unbounded,sans-serif;font-size:15px;text-transform:capitalize}
+.calh button{min-height:38px;width:38px;padding:0;background:var(--soft);color:var(--blue);font-size:20px}
+.calg{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;text-align:center}
+.calg>span{font-size:11.5px;font-weight:700;color:var(--mut);padding:4px 0}
+.calg button{min-height:44px;padding:4px 0 6px;border-radius:12px;background:transparent;color:var(--ink);font-weight:600;font-size:14.5px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:3px}
+.calg button.out{opacity:.3}.calg button.past{color:var(--mut)}
+.calg button.td{box-shadow:inset 0 0 0 2px var(--blue)}
+.calg button.sel{background:var(--blue);color:#fff}
+.calg i{display:flex;gap:3px;height:6px}.calg i b{width:6px;height:6px;border-radius:50%;background:var(--blue)}.calg i b.m{background:#f2a900}
+.calg button.sel i b{background:#fff}.calg button.sel i b.m{background:var(--acc)}
+#evSeg button{color:var(--mut);font-size:14px;padding:0 6px;white-space:nowrap}#evSeg button.on{color:var(--blue)}#evSeg small{font-size:12px;opacity:.75;margin-left:4px}
+.legend{display:flex;gap:14px;justify-content:center;font-size:12.5px;color:var(--mut);margin-top:10px}.legend b{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--blue);margin-right:5px}.legend b.m{background:#f2a900}
+.days.m{background:light-dark(#fff4d1,#2b2610);color:light-dark(#8a6100,var(--acc))}
+.tag.rel{background:light-dark(#fff4d1,#2b2610);border-color:transparent}
 #gate[hidden]{display:none}#gate{position:fixed;inset:0;z-index:20;background:var(--bg);display:grid;place-items:center;padding:24px}
 .gate{max-width:420px;text-align:center}.gate h2{margin:0 0 12px;font-size:26px}.gate p{color:var(--mut);font-size:16px}.gate b{color:var(--ink);user-select:all}
 .hi{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:15px}.hi .ava{box-shadow:0 0 0 2px rgba(255,255,255,.6)}
@@ -142,8 +156,10 @@ details.card[open]>summary::after{transform:rotate(45deg)}
     <div id="tasks"></div>
     <h2>Ждут ответа</h2>
     <div id="wait"></div>
-    <h2>Ближайшее</h2>
-    <div id="events"></div>
+    <h2>Календарь</h2>
+    <div class="card cal" id="cal"></div>
+    <div class="seg" id="evSeg" role="group" aria-label="Какие события"></div>
+    <div id="events" style="margin-top:12px"></div>
     <details class="card"><summary>Добавить событие</summary>
       <form id="evForm"><label for="evT">Что</label><input id="evT" required placeholder="Эфир, выход публикации, конференция">
       <label for="evD">Когда</label><input id="evD" type="date" required>
@@ -382,10 +398,34 @@ function today(){
   const f=tF==='me'?ME:tF;
   const list=S.tasks.filter(x=>tF==='all'||x.who===f).sort((a,b)=>trank(a)-trank(b)||(a.due||'9').localeCompare(b.due||'9')||((b.at||0)-(a.at||0)));
   $('#tasks').innerHTML=list.length?list.map(x=>`<div class="card row"><button class="chk ${x.d?'done':''}" data-a="task" data-id="${esc(x.id)}" aria-label="Готово"></button><span class="grow tt" data-a="edtask" data-id="${esc(x.id)}" title="Нажми, чтобы изменить"><span class="${x.d?'done-t':''}">${x.pr==='hi'&&!x.d?'<b class="flag">Срочно</b> ':''}${esc(x.t)}</span>${tmeta(x)}</span>${ava(x.who)}<button class="ghost sq" data-a="deltask" data-id="${esc(x.id)}" aria-label="Удалить">×</button></div>`).join(''):'<p class="mut">Задач нет — красота.</p>';
-  const ev=S.events.map(x=>({...x,n:dIn(x.d)})).filter(x=>x.n>=0).sort((a,b)=>a.n-b.n);
-  $('#events').innerHTML=ev.length?ev.map(x=>`<div class="card row"><div class="days">${x.n}<small>${pl(x.n,'день','дня','дней')}</small></div><div class="grow"><b>${esc(x.t)}</b><div class="mut">${fmt(x.d)}</div></div><button class="ghost sq" data-a="delev" data-id="${esc(x.id)}" aria-label="Удалить">×</button></div>`).join(''):'<p class="mut">Ничего не запланировано.</p>';
+  calR();evList();
   const bd=[...S.contacts,...(S.people||[]).map(p=>({id:p.id,n:p.n,o:[p.cat,p.note].filter(Boolean).join(' · '),b:p.b,who:'',tg:''}))].map(c=>({...c,n2:bIn(c.b)})).filter(c=>c.n2<=14).sort((a,b)=>a.n2-b.n2);
   $('#bdays').innerHTML=bd.length?bd.map(c=>`<div class="card"><div class="row"><b class="grow">${esc(c.n)}</b><span class="tag ${c.n2<=2?'hot':''}">${when(c.n2)}</span></div><div class="mut">${esc(c.o)}${c.who?' · ведёт '+tm(c.who).n:''}</div>${c.tg?`<div class="acts"><a href="https://t.me/${esc(c.tg.replace('@',''))}">Поздравить в Telegram</a></div>`:''}</div>`).join(''):'<p class="mut">В ближайшие две недели никого.</p>';
+}
+const isM=x=>x.src==='notion';
+const evOn=(x,ds)=>ds>=x.d&&ds<=(x.end&&x.end>x.d?x.end:x.d);
+let calM=new Date(t0.getFullYear(),t0.getMonth(),1),calSel='',evF='ours',evMore=false;
+function calR(){
+  const y=calM.getFullYear(),m=calM.getMonth(),st=new Date(y,m,1),off=(st.getDay()+6)%7,td=plus(0);
+  let h=`<div class="calh"><button type="button" data-a="calm" data-n="-1" aria-label="Предыдущий месяц">‹</button><b>${st.toLocaleDateString('ru-RU',{month:'long'}).replace(/^./,c=>c.toUpperCase())} ${y}</b><button type="button" data-a="calm" data-n="1" aria-label="Следующий месяц">›</button></div><div class="calg">`+['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(d=>`<span>${d}</span>`).join('');
+  for(let i=0;i<42;i++){const d=new Date(y,m,1-off+i);if(i>=35&&d.getMonth()!==m)break;const ds=iso(d),es=S.events.filter(x=>evOn(x,ds)),o=es.some(x=>!isM(x)),k=es.some(isM);
+    h+=`<button type="button" data-a="cday" data-d="${ds}" class="${d.getMonth()!==m?'out ':''}${ds<td?'past ':''}${ds===td?'td ':''}${ds===calSel?'sel':''}" aria-label="${fmt(ds)}${es.length?', событий: '+es.length:''}">${d.getDate()}<i>${o?'<b></b>':''}${k?'<b class="m"></b>':''}</i></button>`}
+  $('#cal').innerHTML=h+'</div><div class="legend"><span><b></b>Наши</span><span><b class="m"></b>Индустрия</span></div>';
+}
+function evCard(x){
+  const n=dIn(x.d),on=n<0,m=isM(x),pt=m?x.t.split(' · '):[x.t],nm=pt[0],dd=on?'<div class="days m" style="font-size:13px">идёт</div>':`<div class="days${m?' m':''}">${n}<small>${pl(n,'день','дня','дней')}</small></div>`;
+  const dt=fmt(x.d)+(x.end&&x.end>x.d?' — '+fmt(x.end):'');
+  const tags=m?pt.slice(1).map(t=>`<span class="tag">${esc(t)}</span>`).join('')+(x.rel?`<span class="tag ${x.rel==='Высокая'?'hot':'rel'}">${esc(x.rel)} релевантность</span>`:''):'';
+  return `<div class="card"><div class="row">${dd}<div class="grow"><b>${esc(nm)}</b><div class="mut">${dt}</div>${tags?`<span class="tm">${tags}</span>`:''}</div>${m?'':`<button class="ghost sq" data-a="delev" data-id="${esc(x.id)}" aria-label="Удалить">×</button>`}</div>${m&&(x.url||x.note)?`${x.note?`<div class="mut" style="margin-top:8px">${esc(x.note)}</div>`:''}${x.url?`<div class="acts"><a href="${esc(x.url)}" target="_blank" rel="noopener">Сайт события</a></div>`:''}`:''}</div>`;
+}
+function evList(){
+  const td=plus(0),up=S.events.filter(x=>(x.end&&x.end>x.d?x.end:x.d)>=td).sort((a,b)=>a.d.localeCompare(b.d));
+  const cnt={ours:up.filter(x=>!isM(x)).length,mkt:up.filter(isM).length};
+  $('#evSeg').innerHTML=[['ours','Наши'],['mkt','Индустрия'],['all','Все']].map(([k,l])=>`<button type="button" class="${!calSel&&evF===k?'on':''}" data-a="evf" data-k="${k}">${l}${k!=='all'?'<small>'+cnt[k]+'</small>':''}</button>`).join('');
+  if(calSel){const es=S.events.filter(x=>evOn(x,calSel)).sort((a,b)=>isM(a)-isM(b));
+    $('#events').innerHTML=`<div class="row" style="margin:0 2px 10px"><b class="grow">${fmt(calSel)}</b><button type="button" class="ghost" style="min-height:36px" data-a="cday" data-d="${calSel}">Показать все</button></div>`+(es.length?es.map(evCard).join(''):'<p class="mut">В этот день ничего нет.</p>');return}
+  const l=up.filter(x=>evF==='all'||(evF==='mkt')===isM(x)),lim=evMore?l.length:5;
+  $('#events').innerHTML=l.length?l.slice(0,lim).map(evCard).join('')+(l.length>lim?`<button type="button" class="ghost" style="width:100%" data-a="evmore">Ещё ${l.length-lim}</button>`:''):`<p class="mut">${evF==='mkt'?'Индустриальных событий впереди нет.':'Ничего не запланировано.'}</p>`;
 }
 function media(){
   $('#types').innerHTML=['Все','Мои',...new Set(S.contacts.map(c=>c.ty).filter(Boolean))].map(t=>`<button type="button" class="${t===fType?'on':''}" data-a="type" data-t="${t}">${t}</button>`).join('');
@@ -523,6 +563,10 @@ document.addEventListener('click',e=>{
   else if(a==='edclose')closeEd();
   else if(a==='dq'){const v=plus(+b.dataset.n);$('#taskDue').value=$('#taskDue').value===v?'':v;dqSync()}
   else if(a==='delev')del('events',id);
+  else if(a==='calm'){calM=new Date(calM.getFullYear(),calM.getMonth()+(+b.dataset.n),1);calR()}
+  else if(a==='cday'){calSel=calSel===b.dataset.d?'':b.dataset.d;calR();evList()}
+  else if(a==='evf'){evF=b.dataset.k;calSel='';evMore=false;calR();evList()}
+  else if(a==='evmore'){evMore=true;evList()}
   else if(a==='type'){fType=b.dataset.t;media()}
   else if(a==='stat'&&C)put('contacts',{...C,s:((C.s||0)+1)%3});
   else if(a==='delc')del('contacts',id);
