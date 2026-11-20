@@ -116,6 +116,9 @@ details.card[open]>summary::after{transform:rotate(45deg)}
 .flag{display:inline-block;font-size:11px;font-weight:800;color:#fff;background:#ff4d6d;border-radius:99px;padding:1px 8px;margin-right:4px;vertical-align:2px}
 .tm{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.tm .tag{font-size:12px;padding:1px 9px}.tag.late{background:#ff4d6d;border-color:#ff4d6d;color:#fff}.tag.now{background:var(--blue);border-color:var(--blue);color:#fff}
 .note{font-size:13px;color:var(--mut);margin:10px 2px 0}
+.tt{cursor:pointer}.tt:active{opacity:.7}
+.ovl[hidden]{display:none}.ovl{position:fixed;inset:0;z-index:15;background:rgba(7,8,26,.55);display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--bg);width:100%;max-width:640px;border-radius:26px 26px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));max-height:92vh;overflow:auto;animation:fade .2s ease}
 #gate[hidden]{display:none}#gate{position:fixed;inset:0;z-index:20;background:var(--bg);display:grid;place-items:center;padding:24px}
 .gate{max-width:420px;text-align:center}.gate h2{margin:0 0 12px;font-size:26px}.gate p{color:var(--mut);font-size:16px}.gate b{color:var(--ink);user-select:all}
 .hi{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:15px}.hi .ava{box-shadow:0 0 0 2px rgba(255,255,255,.6)}
@@ -241,6 +244,7 @@ details.card[open]>summary::after{transform:rotate(45deg)}
   <a href="#kpi" data-v="kpi"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>KPI</a>
 </nav>
 <div class="toast" id="toast"></div>
+<div class="ovl" id="tEd" hidden><form class="sheet" id="tEdF"><h2 style="margin:0 0 4px">Редактировать задачу</h2><label for="eT">Текст</label><textarea id="eT" required></textarea><label>Кому</label><div class="chips" id="eWho" style="margin-top:0"></div><div class="g2"><div><label for="eDue">Срок</label><input id="eDue" type="date"></div><div><label for="eRep">Повтор</label><select id="eRep"><option value="">Без повтора</option><option value="d">Каждый день</option><option value="w">Каждую неделю</option><option value="m">Каждый месяц</option></select></div></div><label class="row" style="color:var(--ink);font-size:15px;margin-top:12px"><input type="checkbox" id="eHi" style="width:22px;min-height:22px;flex:none"> Срочно</label><div class="row" style="margin-top:18px"><button class="grow">Сохранить</button><button type="button" class="ghost" data-a="edclose">Отмена</button></div></form></div>
 <div id="gate" hidden></div>
 
 <script>
@@ -377,7 +381,7 @@ function today(){
   $('#taskF').innerHTML=[['me','Мои'],['all','Все'],...TEAM.filter(t=>t.k!==ME).map(t=>[t.k,t.n])].map(([k,l])=>`<button type="button" class="${tF===k?'on':''}" data-a="tf" data-k="${k}">${l}</button>`).join('');
   const f=tF==='me'?ME:tF;
   const list=S.tasks.filter(x=>tF==='all'||x.who===f).sort((a,b)=>trank(a)-trank(b)||(a.due||'9').localeCompare(b.due||'9')||((b.at||0)-(a.at||0)));
-  $('#tasks').innerHTML=list.length?list.map(x=>`<div class="card row"><button class="chk ${x.d?'done':''}" data-a="task" data-id="${esc(x.id)}" aria-label="Готово"></button><span class="grow"><span class="${x.d?'done-t':''}">${x.pr==='hi'&&!x.d?'<b class="flag">Срочно</b> ':''}${esc(x.t)}</span>${tmeta(x)}</span>${ava(x.who)}<button class="ghost sq" data-a="deltask" data-id="${esc(x.id)}" aria-label="Удалить">×</button></div>`).join(''):'<p class="mut">Задач нет — красота.</p>';
+  $('#tasks').innerHTML=list.length?list.map(x=>`<div class="card row"><button class="chk ${x.d?'done':''}" data-a="task" data-id="${esc(x.id)}" aria-label="Готово"></button><span class="grow tt" data-a="edtask" data-id="${esc(x.id)}" title="Нажми, чтобы изменить"><span class="${x.d?'done-t':''}">${x.pr==='hi'&&!x.d?'<b class="flag">Срочно</b> ':''}${esc(x.t)}</span>${tmeta(x)}</span>${ava(x.who)}<button class="ghost sq" data-a="deltask" data-id="${esc(x.id)}" aria-label="Удалить">×</button></div>`).join(''):'<p class="mut">Задач нет — красота.</p>';
   const ev=S.events.map(x=>({...x,n:dIn(x.d)})).filter(x=>x.n>=0).sort((a,b)=>a.n-b.n);
   $('#events').innerHTML=ev.length?ev.map(x=>`<div class="card row"><div class="days">${x.n}<small>${pl(x.n,'день','дня','дней')}</small></div><div class="grow"><b>${esc(x.t)}</b><div class="mut">${fmt(x.d)}</div></div><button class="ghost sq" data-a="delev" data-id="${esc(x.id)}" aria-label="Удалить">×</button></div>`).join(''):'<p class="mut">Ничего не запланировано.</p>';
   const bd=[...S.contacts,...(S.people||[]).map(p=>({id:p.id,n:p.n,o:[p.cat,p.note].filter(Boolean).join(' · '),b:p.b,who:'',tg:''}))].map(c=>({...c,n2:bIn(c.b)})).filter(c=>c.n2<=14).sort((a,b)=>a.n2-b.n2);
@@ -514,6 +518,9 @@ document.addEventListener('click',e=>{
   else if(a==='tf'){tF=b.dataset.k;today()}
   else if(a==='task'&&T){const done=!T.d;put('tasks',{...T,d:done,sp:T.sp||(done&&!!T.rep)});if(done&&T.rep&&!T.sp){const nx=nextDue(T.due||plus(0),T.rep);put('tasks',{t:T.t,d:false,who:T.who,by:T.by||ME,at:Date.now(),rep:T.rep,pr:T.pr||'',due:nx});toast('Готово! Следующая — '+fmt(nx))}}
   else if(a==='deltask')del('tasks',id);
+  else if(a==='edtask'&&T)openEd(T);
+  else if(a==='ewho'){edWho=b.dataset.k;edChips()}
+  else if(a==='edclose')closeEd();
   else if(a==='delev')del('events',id);
   else if(a==='type'){fType=b.dataset.t;media()}
   else if(a==='stat'&&C)put('contacts',{...C,s:((C.s||0)+1)%3});
@@ -535,6 +542,13 @@ document.addEventListener('click',e=>{
   else if(a==='tdel')del('tpl',id);
   else if(a==='aicopy')copy(chat[+b.dataset.i].content);
 });
+let edId=null,edWho=ME;
+const edChips=()=>{$('#eWho').innerHTML=TEAM.map(t=>`<button type="button" class="${t.k===edWho?'on':''}" data-a="ewho" data-k="${t.k}">${ava(t.k)}${t.n}</button>`).join('')};
+function openEd(T){edId=T.id;edWho=T.who||ME;$('#eT').value=T.t||'';$('#eDue').value=T.due||'';$('#eRep').value=T.rep||'';$('#eHi').checked=T.pr==='hi';edChips();$('#tEd').hidden=false;document.body.style.overflow='hidden'}
+function closeEd(){edId=null;$('#tEd').hidden=true;document.body.style.overflow=''}
+$('#tEd').addEventListener('click',e=>{if(e.target.id==='tEd')closeEd()});
+addEventListener('keydown',e=>{if(e.key==='Escape'&&edId)closeEd()});
+$('#tEdF').addEventListener('submit',e=>{e.preventDefault();const T=S.tasks.find(x=>x.id===edId);if(!T){closeEd();toast('Задачу уже удалили');return}const v=$('#eT').value.trim();if(!v)return;const rp=$('#eRep').value,du=$('#eDue').value||(rp?plus(0):''),moved=edWho!==T.who;put('tasks',{...T,t:v,who:edWho,due:du,rep:rp,pr:$('#eHi').checked?'hi':''});closeEd();toast(moved?'Задача передана: '+tm(edWho).n:'Задача обновлена')});
 $('#taskForm').addEventListener('submit',e=>{e.preventDefault();const v=$('#taskIn').value.trim();if(!v)return;const rp=$('#taskRep').value,du=$('#taskDue').value||(rp?plus(0):'');put('tasks',{t:v,d:false,who:newWho,by:ME,at:Date.now(),due:du,rep:rp,pr:$('#taskHi').checked?'hi':''});$('#taskIn').value='';$('#taskDue').value='';$('#taskRep').value='';$('#taskHi').checked=false;$('#topt').open=false;toast(newWho!==ME?'Задача ушла: '+tm(newWho).n:(rp?'Повторяющаяся задача создана':'Задача добавлена'))});
 $('#evForm').addEventListener('submit',e=>{e.preventDefault();put('events',{t:$('#evT').value.trim(),d:$('#evD').value});e.target.reset();toast('Событие добавлено')});
 $('#cForm').addEventListener('submit',e=>{e.preventDefault();const b=$('#cB').value;put('contacts',{n:$('#cN').value.trim(),o:$('#cO').value.trim(),ty:$('#cTy').value,to:$('#cTo').value.trim(),tg:$('#cTg').value.trim(),e:$('#cE').value.trim(),b:b?b.slice(5):'',s:0,who:$('#cW').value});e.target.reset();toast('Контакт в базе')});
