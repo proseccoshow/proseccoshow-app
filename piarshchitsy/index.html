@@ -137,8 +137,8 @@ details.card[open]>summary::after{transform:rotate(45deg)}
   <section class="view" id="v-today">
     <div id="brief" style="margin-top:16px"></div>
     <h2>Задачи</h2>
-    <form id="taskForm"><div class="row"><input id="taskIn" placeholder="Новая задача: позвонить, отправить релиз…" aria-label="Новая задача"><button class="sq" aria-label="Добавить">+</button></div><div class="chips" id="taskWho" role="group" aria-label="Кому"></div><details class="topt" id="topt"><summary>Срок, срочность, повтор</summary><div class="g2"><div><label for="taskDue">Срок</label><input id="taskDue" type="date"></div><div><label for="taskRep">Повтор</label><select id="taskRep"><option value="">Без повтора</option><option value="d">Каждый день</option><option value="w">Каждую неделю</option><option value="m">Каждый месяц</option></select></div></div><label class="row" style="color:var(--ink);font-size:15px;margin-top:12px"><input type="checkbox" id="taskHi" style="width:22px;min-height:22px;flex:none"> Срочно</label></details></form>
-    <div class="chips" id="taskF"></div>
+    <form id="taskForm"><div class="row"><input id="taskIn" placeholder="Новая задача: позвонить, отправить релиз…" aria-label="Новая задача"><button class="sq" aria-label="Добавить">+</button></div><div class="chips" id="taskWho" role="group" aria-label="Кому"></div><div class="topt"><div class="chips" id="dueQ" role="group" aria-label="Срок" style="margin:4px 0 0"><span class="mut" style="align-self:center">Срок:</span><button type="button" data-a="dq" data-n="0">Сегодня</button><button type="button" data-a="dq" data-n="1">Завтра</button><button type="button" data-a="dq" data-n="7">Через неделю</button></div><div class="g2"><div><label for="taskDue">Дедлайн</label><input id="taskDue" type="date"></div><div><label for="taskRep">Повтор</label><select id="taskRep"><option value="">Без повтора</option><option value="d">Каждый день</option><option value="w">Каждую неделю</option><option value="m">Каждый месяц</option></select></div></div><label class="row" style="color:var(--ink);font-size:15px;margin-top:12px"><input type="checkbox" id="taskHi" style="width:22px;min-height:22px;flex:none"> Срочно</label></div></form>
+    <div class="chips" id="taskF" style="margin-top:22px;padding-top:16px;border-top:1px solid var(--line)"></div>
     <div id="tasks"></div>
     <h2>Ждут ответа</h2>
     <div id="wait"></div>
@@ -521,6 +521,7 @@ document.addEventListener('click',e=>{
   else if(a==='edtask'&&T)openEd(T);
   else if(a==='ewho'){edWho=b.dataset.k;edChips()}
   else if(a==='edclose')closeEd();
+  else if(a==='dq'){const v=plus(+b.dataset.n);$('#taskDue').value=$('#taskDue').value===v?'':v;dqSync()}
   else if(a==='delev')del('events',id);
   else if(a==='type'){fType=b.dataset.t;media()}
   else if(a==='stat'&&C)put('contacts',{...C,s:((C.s||0)+1)%3});
@@ -542,6 +543,8 @@ document.addEventListener('click',e=>{
   else if(a==='tdel')del('tpl',id);
   else if(a==='aicopy')copy(chat[+b.dataset.i].content);
 });
+const dqSync=()=>document.querySelectorAll('#dueQ [data-a="dq"]').forEach(x=>x.classList.toggle('on',$('#taskDue').value===plus(+x.dataset.n)));
+$('#taskDue').addEventListener('input',dqSync);
 let edId=null,edWho=ME;
 const edChips=()=>{$('#eWho').innerHTML=TEAM.map(t=>`<button type="button" class="${t.k===edWho?'on':''}" data-a="ewho" data-k="${t.k}">${ava(t.k)}${t.n}</button>`).join('')};
 function openEd(T){edId=T.id;edWho=T.who||ME;$('#eT').value=T.t||'';$('#eDue').value=T.due||'';$('#eRep').value=T.rep||'';$('#eHi').checked=T.pr==='hi';edChips();$('#tEd').hidden=false;document.body.style.overflow='hidden'}
@@ -549,7 +552,7 @@ function closeEd(){edId=null;$('#tEd').hidden=true;document.body.style.overflow=
 $('#tEd').addEventListener('click',e=>{if(e.target.id==='tEd')closeEd()});
 addEventListener('keydown',e=>{if(e.key==='Escape'&&edId)closeEd()});
 $('#tEdF').addEventListener('submit',e=>{e.preventDefault();const T=S.tasks.find(x=>x.id===edId);if(!T){closeEd();toast('Задачу уже удалили');return}const v=$('#eT').value.trim();if(!v)return;const rp=$('#eRep').value,du=$('#eDue').value||(rp?plus(0):''),moved=edWho!==T.who;put('tasks',{...T,t:v,who:edWho,due:du,rep:rp,pr:$('#eHi').checked?'hi':''});closeEd();toast(moved?'Задача передана: '+tm(edWho).n:'Задача обновлена')});
-$('#taskForm').addEventListener('submit',e=>{e.preventDefault();const v=$('#taskIn').value.trim();if(!v)return;const rp=$('#taskRep').value,du=$('#taskDue').value||(rp?plus(0):'');put('tasks',{t:v,d:false,who:newWho,by:ME,at:Date.now(),due:du,rep:rp,pr:$('#taskHi').checked?'hi':''});$('#taskIn').value='';$('#taskDue').value='';$('#taskRep').value='';$('#taskHi').checked=false;$('#topt').open=false;toast(newWho!==ME?'Задача ушла: '+tm(newWho).n:(rp?'Повторяющаяся задача создана':'Задача добавлена'))});
+$('#taskForm').addEventListener('submit',e=>{e.preventDefault();const v=$('#taskIn').value.trim();if(!v)return;const rp=$('#taskRep').value,du=$('#taskDue').value||(rp?plus(0):'');put('tasks',{t:v,d:false,who:newWho,by:ME,at:Date.now(),due:du,rep:rp,pr:$('#taskHi').checked?'hi':''});$('#taskIn').value='';$('#taskDue').value='';$('#taskRep').value='';$('#taskHi').checked=false;dqSync();toast(newWho!==ME?'Задача ушла: '+tm(newWho).n:(rp?'Повторяющаяся задача создана':'Задача добавлена'))});
 $('#evForm').addEventListener('submit',e=>{e.preventDefault();put('events',{t:$('#evT').value.trim(),d:$('#evD').value});e.target.reset();toast('Событие добавлено')});
 $('#cForm').addEventListener('submit',e=>{e.preventDefault();const b=$('#cB').value;put('contacts',{n:$('#cN').value.trim(),o:$('#cO').value.trim(),ty:$('#cTy').value,to:$('#cTo').value.trim(),tg:$('#cTg').value.trim(),e:$('#cE').value.trim(),b:b?b.slice(5):'',s:0,who:$('#cW').value});e.target.reset();toast('Контакт в базе')});
 $('#logForm').addEventListener('submit',async e=>{e.preventDefault();const v=$('#logIn').value.trim();if(!v)return;const ent={id:nid(),t:v,d:plus(0),who:ME};$('#logIn').value='';await put('log',ent);S.kpi.pub[0]++;setKpi();toast('+1 публикация');if($('#logN').checked)pushNotion(ent)});
