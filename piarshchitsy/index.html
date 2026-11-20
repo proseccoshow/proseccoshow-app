@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Пиарщицы</title>
 <meta name="robots" content="noindex">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
+<script>/* обновление: если Telegram показал старую копию страницы — перезагрузиться на свежую */
+const APPV='2026-11-20-cal';
+try{fetch(location.pathname+'?nc='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{const m=t.match(/const APPV='([^']+)'/);if(m&&m[1]!==APPV){const k='prpult-rl-'+m[1];if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');location.replace(location.pathname+'?v='+encodeURIComponent(m[1])+location.hash)}}}).catch(()=>{})}catch(e){}
+</script>
 <script src="../telegram-web-app.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
@@ -167,6 +172,7 @@ details.card[open]>summary::after{transform:rotate(45deg)}
     </details>
     <h2>Дни рождения контактов</h2>
     <div id="bdays"></div>
+    <p class="note" style="text-align:center;opacity:.6">Версия <span id="ver"></span></p>
   </section>
 
   <section class="view" id="v-media">
@@ -548,6 +554,7 @@ function route(){
   window.scrollTo(0,0);
 }
 addEventListener('hashchange',route);
+try{$('#ver').textContent=APPV}catch(e){}
 let resetArm=false;
 document.addEventListener('click',e=>{
   const b=e.target.closest('[data-a]');if(!b)return;
